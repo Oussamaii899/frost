@@ -1,60 +1,82 @@
-// Components
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+"use client"
 
-import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import { Head, useForm } from "@inertiajs/react"
+import { LoaderCircle, ShieldCheck } from "lucide-react"
+import type { FormEventHandler } from "react"
+
+import InputError from "@/components/input-error"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import AuthLayout from "@/pages/auth/AuthLayout"
 
 export default function ConfirmPassword() {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<{ password: string }>>({
-        password: '',
-    });
+  const { data, setData, post, processing, errors, reset } = useForm<Required<{ password: string }>>({
+    password: "",
+  })
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
+  const submit: FormEventHandler = (e) => {
+    e.preventDefault()
 
-        post(route('password.confirm'), {
-            onFinish: () => reset('password'),
-        });
-    };
+    post(route("password.confirm"), {
+      onFinish: () => reset("password"),
+    })
+  }
 
-    return (
-        <AuthLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
-        >
-            <Head title="Confirm password" />
+  return (
+    <AuthLayout title="Confirm Password">
+      <Head title="Confirm password" />
 
-            <form onSubmit={submit}>
-                <div className="space-y-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            name="password"
-                            placeholder="Password"
-                            autoComplete="current-password"
-                            value={data.password}
-                            autoFocus
-                            onChange={(e) => setData('password', e.target.value)}
-                        />
+      <Card className="w-full max-w-md bg-slate-800/50 border-slate-700 backdrop-blur-md animate-slide-in-up">
+        <CardHeader className="space-y-3 text-center">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full flex items-center justify-center mb-2">
+            <ShieldCheck className="w-8 h-8 text-cyan-400 animate-pulse-slow" />
+          </div>
+          <CardTitle className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+            Confirm Password
+          </CardTitle>
+          <CardDescription className="text-gray-300 text-base">
+            This is a secure area. Please confirm your password to continue.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={submit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                value={data.password}
+                autoFocus
+                onChange={(e) => setData("password", e.target.value)}
+                className="bg-slate-900/50 border-slate-600 text-white placeholder:text-gray-400 focus:border-primary transition-colors"
+              />
+              <InputError message={errors.password} />
+            </div>
 
-                        <InputError message={errors.password} />
-                    </div>
-
-                    <div className="flex items-center">
-                        <Button className="w-full" disabled={processing}>
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Confirm password
-                        </Button>
-                    </div>
-                </div>
-            </form>
-        </AuthLayout>
-    );
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-3 group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
+              disabled={processing}
+            >
+              {processing ? (
+                <>
+                  <LoaderCircle className="h-4 w-4 animate-spin mr-2" />
+                  Confirming...
+                </>
+              ) : (
+                "Confirm Password"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </AuthLayout>
+  )
 }

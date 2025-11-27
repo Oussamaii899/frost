@@ -29,7 +29,10 @@ import {
   Music,
   Camera,
   Server,
+  LucideIcon,
 } from "lucide-react"
+import { getIcon } from "./Admin/icon-map"
+import CookieConsent from "@/components/CookieConsent"
 
 // Custom hook for intersection observer
 const useIntersectionObserver = (options = {}) => {
@@ -66,7 +69,14 @@ const useIntersectionObserver = (options = {}) => {
   return [ref, isIntersecting]
 }
 
-export default function FrostMarket() {
+interface Categories {
+  id: number
+  name: string
+  slug: string
+  icon: string | LucideIcon
+}
+
+export default function FrostMarket({Categories, Products, Settings, user}: {Categories?: Categories[], Products?: any, Settings?: any, user?: any}) {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState("")
   const [isDarkMode, setIsDarkMode] = useState(true)
@@ -76,6 +86,14 @@ export default function FrostMarket() {
   const [showDeveloperModal, setShowDeveloperModal] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
+    const [settings, setSettings] = useState(
+    Settings.reduce((acc: any, setting: any) => {
+      acc[setting.key] = setting.value
+      return acc
+    }, {} as Record<string, any>)
+  )
+
+  console.log(settings);
   // Intersection observer refs for scroll animations
   const [heroRef, heroInView] = useIntersectionObserver({ threshold: 0.1 })
   const [productsRef, productsInView] = useIntersectionObserver({ threshold: 0.1 })
@@ -113,7 +131,14 @@ export default function FrostMarket() {
     }
   }, [isDarkMode])
 
-  const productCategories = {
+
+  const handlePurchase = (productName: string) => {
+    setSelectedProduct(productName)
+    setShowPurchaseModal(true)
+  }
+ /* 
+ 
+    const productCategories = {
     nitro: [
       {
         id: 1,
@@ -300,11 +325,7 @@ export default function FrostMarket() {
     ],
   }
 
-  const handlePurchase = (productName: string) => {
-    setSelectedProduct(productName)
-    setShowPurchaseModal(true)
-  }
-
+ */
   const getBadgeColor = (badge: string) => {
     switch (badge) {
       case "Most Popular":
@@ -360,12 +381,12 @@ export default function FrostMarket() {
             <div className="flex items-center space-x-2 mb-2">
               <Badge
                 className={`text-xs font-medium ${
-                  product.stock === "In Stock"
+                  product.stock > 0
                     ? "bg-green-500/20 text-green-400 border-green-500/30"
                     : "bg-red-500/20 text-red-400 border-red-500/30"
                 }`}
               >
-                {product.stock}
+                {product.stock > 0 ? "In Stock" : "Unavailable"}
               </Badge>
             </div>
           </div>
@@ -384,8 +405,8 @@ export default function FrostMarket() {
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 font-semibold animate-pulse-green">
               Save{" "}
               {Math.round(
-                ((Number.parseFloat(product.originalPrice.slice(1)) - Number.parseFloat(product.price.slice(1))) /
-                  Number.parseFloat(product.originalPrice.slice(1))) *
+                ((Number.parseFloat(String(product.originalPrice).slice(1)) - Number.parseFloat(String(product.price).slice(1))) /
+                  Number.parseFloat(String(product.originalPrice).slice(1))) *
                   100,
               )}
               %
@@ -394,20 +415,20 @@ export default function FrostMarket() {
 
           <Button
             className={`w-full font-semibold py-3 transition-all duration-300 hover:shadow-lg group/btn relative overflow-hidden ${
-              product.stock === "In Stock"
+              product.stock > 0
                 ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:shadow-cyan-500/25"
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             }`}
-            onClick={() => product.stock === "In Stock" && handlePurchase(product.name)}
-            disabled={product.stock !== "In Stock"}
+            onClick={() => product.stock > 0 && handlePurchase(product.name)}
+            disabled={product.stock <= 0}
           >
             <span className="relative z-10 flex items-center justify-center">
-              {product.stock === "In Stock" ? "Purchase Now" : "Out of Stock"}
-              {product.stock === "In Stock" && (
+              {product.stock > 0 ? "Purchase Now" : "Out of Stock"}
+              {product.stock > 0 && (
                 <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
               )}
             </span>
-            {product.stock === "In Stock" && (
+            {product.stock > 0 && (
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
             )}
           </Button>
@@ -444,7 +465,7 @@ export default function FrostMarket() {
             <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
           </div>
           <p className={`text-lg font-medium animate-pulse ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-            Loading Frost Market...
+            Loading {settings.site_name}...
           </p>
         </div>
       </div>
@@ -459,6 +480,7 @@ export default function FrostMarket() {
           : "bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50"
       }`}
     >
+      <CookieConsent></CookieConsent>
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl animate-float-slow"></div>
@@ -467,163 +489,140 @@ export default function FrostMarket() {
       </div>
 
       {/* Enhanced Header */}
-      <header
-        className={`container max-w-full mx-auto px-4 py-6 sticky top-0 z-50 transition-all duration-500 ${
-          showContent ? "animate-slide-down" : "opacity-0 -translate-y-full"
-        } ${
-          isScrolled
-            ? isDarkMode
-              ? "bg-slate-900/90 backdrop-blur-md border-b border-slate-700/50"
-              : "bg-white/90 backdrop-blur-md border-b border-gray-200/50"
-            : "bg-transparent"
+           <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+      <div
+        className={`backdrop-blur-xl border-b transition-all duration-500 ${
+          isScrolled ? "bg-slate-900/50 border-slate-700/30" : "bg-transparent border-transparent"
         }`}
       >
-        <nav className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative group">
-              <img
-                src="/frost.png"
-                alt="Frost Market Logo"
-                width={120}
-                height={40}
-                className="h-12 w-auto hover:scale-105 transition-transform duration-300 filter drop-shadow-lg"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        {/* Centered container with max width */}
+        <div className="max-w-[1530px] mx-auto px-4 py-4">
+          <nav className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center">
+              <div className="relative group">
+                <img
+                  src="/frost.png"
+                  alt="Frost Market Logo"
+                  width={120}
+                  height={40}
+                  className="h-12 w-auto hover:scale-105 transition-transform duration-300 filter drop-shadow-lg"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
             </div>
-          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}
-              className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group ${
-                isDarkMode ? "text-white" : "text-gray-800"
-              }`}
-            >
-              About
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
-            </button>
-            <button
-              onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
-              className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group ${
-                isDarkMode ? "text-white" : "text-gray-800"
-              }`}
-            >
-              Products
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
-            </button>
-            <button
-              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-              className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group ${
-                isDarkMode ? "text-white" : "text-gray-800"
-              }`}
-            >
-              Features
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
-            </button>
-            <button
-              onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-              className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group ${
-                isDarkMode ? "text-white" : "text-gray-800"
-              }`}
-            >
-              Contact
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
-            </button>
-          </div>
-
-          {/* Right side buttons */}
-          <div className="flex items-center space-x-4">
-            {/* Dark Mode Toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`border-slate-600 hover:bg-slate-700 transition-all duration-300 hover:scale-110 hover:rotate-12 relative group ${
-                isDarkMode
-                  ? "bg-transparent text-gray-300 hover:text-white"
-                  : "bg-transparent text-gray-600 hover:text-gray-900 border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              {isDarkMode ? (
-                <Sun className="w-4 h-4 animate-spin-slow" />
-              ) : (
-                <Moon className="w-4 h-4 animate-bounce-subtle" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </Button>
-
-            {/* Join Discord Button */}
-            <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center gap-2 font-semibold px-6 hidden sm:flex hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 relative group overflow-hidden">
-              <MessageCircle className="w-4 h-4 animate-pulse relative z-10" />
-              <span className="relative z-10">Join our Discord</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </Button>
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="md:hidden bg-transparent hover:scale-110 transition-all duration-300"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-4 h-4 animate-spin" /> : <Menu className="w-4 h-4 animate-pulse" />}
-            </Button>
-          </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div
-            className={`md:hidden mt-4 p-4 rounded-lg border transition-all duration-500 animate-slide-down backdrop-blur-md ${
-              isDarkMode ? "bg-slate-800/80 border-slate-700" : "bg-white/80 border-gray-200"
-            }`}
-          >
-            <div className="flex flex-col space-y-4">
+            {/* Desktop Navigation - Centered */}
+            <div className="hidden md:flex items-center space-x-8">
               <button
                 onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}
-                className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left ${
-                  isDarkMode ? "text-white" : "text-gray-800"
-                }`}
+                className="font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group text-white"
               >
                 About
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
               </button>
               <button
                 onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
-                className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left ${
-                  isDarkMode ? "text-white" : "text-gray-800"
-                }`}
+                className="font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group text-white"
               >
                 Products
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
               </button>
               <button
                 onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-                className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left ${
-                  isDarkMode ? "text-white" : "text-gray-800"
-                }`}
+                className="font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group text-white"
               >
                 Features
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
               </button>
               <button
-                onClick={() => {
-                  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-                  setIsMobileMenuOpen(false)
-                }}
-                className={`font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left ${
-                  isDarkMode ? "text-white" : "text-gray-800"
-                }`}
+                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+                className="font-medium transition-all duration-300 hover:text-cyan-400 hover:scale-105 relative group text-white"
               >
                 Contact
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:w-full transition-all duration-300"></span>
               </button>
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center gap-2 font-semibold animate-bounce-subtle">
-                <MessageCircle className="w-4 h-4" />
-                Join our Discord
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <a href="/admin">
+                  <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-6 hidden sm:flex hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 relative group overflow-hidden">
+                    <span className="relative z-10">Dashboard</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </Button>
+                </a>
+              ) : (
+                <a href="/login">
+                  <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-6 hidden sm:flex hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 relative group overflow-hidden">
+                    <span className="relative z-10">Login</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </Button>
+                </a>
+              )}
+
+              {/* Mobile Menu Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="md:hidden bg-slate-800/50 backdrop-blur-sm hover:scale-110 transition-all duration-300 border-slate-600"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="w-4 h-4 animate-spin" /> : <Menu className="w-4 h-4 animate-pulse" />}
               </Button>
             </div>
-          </div>
-        )}
-      </header>
+          </nav>
 
+          {/* Mobile Menu - Full width glass effect */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden mt-4 p-4 rounded-lg border transition-all duration-500 animate-slide-down backdrop-blur-lg bg-slate-800/50 border-slate-700/30">
+              <div className="flex flex-col space-y-4">
+                <button
+                  onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}
+                  className="font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left text-white"
+                >
+                  About
+                </button>
+                <button
+                  onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
+                  className="font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left text-white"
+                >
+                  Products
+                </button>
+                <button
+                  onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+                  className="font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left text-white"
+                >
+                  Features
+                </button>
+                <button
+                  onClick={() => {
+                    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-2 text-left text-white"
+                >
+                  Contact
+                </button>
+                {user ? (
+                  <a href="/admin">
+                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center font-semibold w-full justify-center">
+                      Dashboard
+                    </Button>
+                  </a>
+                ) : (
+                  <a href="/login">
+                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center font-semibold w-full justify-center">
+                      Login
+                    </Button>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
       {/* Enhanced Hero Section */}
       <section id="about" className="container mx-auto px-4 py-16 lg:py-24 relative" ref={heroRef}>
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -646,7 +645,7 @@ export default function FrostMarket() {
             >
               <span className="block">Welcome to</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 animate-gradient">
-                Frost Market
+                {settings.site_name}
               </span>
             </h1>
             <p
@@ -655,8 +654,7 @@ export default function FrostMarket() {
               } ${showContent ? "animate-slide-in-left" : "opacity-0 -translate-x-full"}`}
               style={{ animationDelay: "0.3s" }}
             >
-              Your premier destination for premium digital services. We provide high-quality Discord services, social
-              media growth, gaming accounts, and streaming subscriptions with unmatched reliability.
+              {settings.site_description}
             </p>
             <div
               className={`flex flex-col sm:flex-row gap-4 mb-12 justify-center lg:justify-start ${
@@ -665,6 +663,9 @@ export default function FrostMarket() {
               style={{ animationDelay: "0.4s" }}
             >
               <Button
+              onClick={() => {
+                  window.open(settings.discord_link, "_blank")
+                }}
                 size="lg"
                 className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-4 text-lg font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
               >
@@ -884,88 +885,40 @@ export default function FrostMarket() {
             className={`w-full max-w-6xl mx-auto border rounded-xl h-full p-4 mb-12 ${isDarkMode ? "bg-slate-800/50 border-slate-700" : "bg-white/50 border-gray-200"}`}
           >
             <div className="grid grid-cols-2 md:grid-cols-6 gap-2 w-full">
-              <TabsTrigger
-                value="boosts"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-400 rounded-lg transition-all duration-300 hover:scale-105 py-3 px-2 text-xs sm:text-sm font-medium flex items-center justify-center"
-              >
-                <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-pulse" />
-                <span>Boosts</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="nitro"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-400 rounded-lg transition-all duration-300 hover:scale-105 py-3 px-2 text-xs sm:text-sm font-medium flex items-center justify-center"
-              >
-                <Crown className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-bounce-subtle" />
-                <span>Nitro</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="spotify"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-400 rounded-lg transition-all duration-300 hover:scale-105 py-3 px-2 text-xs sm:text-sm font-medium flex items-center justify-center"
-              >
-                <Music className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-pulse-slow" />
-                <span>Spotify</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="minecraft"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-400 rounded-lg transition-all duration-300 hover:scale-105 py-3 px-2 text-xs sm:text-sm font-medium flex items-center justify-center"
-              >
-                <Server className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-bounce-subtle" />
-                <span className="hidden xs:inline sm:inline">Minecraft</span>
-                <span className="xs:hidden sm:hidden">MC</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="snapchat"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-400 rounded-lg transition-all duration-300 hover:scale-105 py-3 px-2 text-xs sm:text-sm font-medium flex items-center justify-center"
-              >
-                <Camera className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-pulse" />
-                <span className="hidden xs:inline sm:inline">Snapchat</span>
-                <span className="xs:hidden sm:hidden">Snap</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="hosting"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-400 rounded-lg transition-all duration-300 hover:scale-105 py-3 px-2 text-xs sm:text-sm font-medium flex items-center justify-center"
-              >
-                <Globe className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin-slow" />
-                <span>Hosting</span>
-              </TabsTrigger>
+
+              {
+                Categories?.map((category) => {
+                    const Icon = getIcon(category.icon)
+                  
+                return (
+                  <TabsTrigger
+                    key={category.slug}
+                    value={category.slug}
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-400 rounded-lg transition-all duration-300 hover:scale-105 py-3 px-2 text-xs sm:text-sm font-medium flex items-center justify-center"
+                  >
+                    {Icon && category.icon ? <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-pulse" /> : "ll"}
+                    <span>{category.name}</span>
+                  </TabsTrigger>
+                )
+              })
+              }
+
             </div>
           </TabsList>
 
-          <TabsContent value="boosts" className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-              {productCategories.boosts.map((product, index) => renderProductCard(product, index))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="nitro" className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productCategories.nitro.map((product, index) => renderProductCard(product, index))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="spotify" className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productCategories.spotify.map((product, index) => renderProductCard(product, index))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="minecraft" className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productCategories.minecraft.map((product, index) => renderProductCard(product, index))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="snapchat" className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productCategories.snapchat.map((product, index) => renderProductCard(product, index))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="hosting" className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productCategories.hosting.map((product, index) => renderProductCard(product, index))}
-            </div>
-          </TabsContent>
+{
+            Categories?.map((category) => {
+              return (
+                <TabsContent key={category.slug} value={category.slug} className="mt-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {Products
+                      .filter((product) => product.category.slug === category.slug)
+                      .map((product, index) => renderProductCard(product, index))}
+                  </div>
+                </TabsContent>
+              )
+            })
+          }
         </Tabs>
       </section>
 
@@ -987,7 +940,7 @@ export default function FrostMarket() {
               }`}
               style={{ animationDelay: "0.2s" }}
             >
-              Why Choose Frost Market?
+              Why Choose {settings.site_name}?
             </h3>
             <div className="space-y-8">
               {[
@@ -1138,7 +1091,7 @@ export default function FrostMarket() {
         >
           <Button
             size="lg"
-            onClick={() => window.open("https://discord.gg/rK8ZyPuT", "_blank")}
+            onClick={() => window.open(settings.discord_link, "_blank")}
             className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 lg:px-12 py-3 lg:py-4 text-lg lg:text-xl font-semibold flex items-center gap-3 group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25 mx-auto"
           >
             <MessageCircle className="w-5 h-5 lg:w-6 lg:h-6 animate-pulse" />
@@ -1189,6 +1142,9 @@ export default function FrostMarket() {
             >
               <Button
                 size="lg"
+                onClick={() => {
+                  window.open(settings.discord_link, "_blank")
+                }}
                 className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-10 py-4 text-lg font-semibold flex items-center gap-3 group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
               >
                 <MessageCircle className="w-5 h-5 animate-pulse" />
@@ -1233,8 +1189,9 @@ export default function FrostMarket() {
             </Badge>
           </div>
           <div className={`text-center md:text-right ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-            <p className="text-lg font-medium">&copy; 2025 Frost Market. All rights reserved.</p>
+            <p className="text-lg font-medium">&copy; 2025 {settings.site_name}. All rights reserved.</p>
             <p className="mt-2">Premium digital services you can trust worldwide.</p>
+            {settings.developer_badge == 1 ? (
             <div className="mt-3 flex items-center justify-center md:justify-end gap-2">
               <span className="text-sm">Developed by</span>
               <button
@@ -1259,6 +1216,11 @@ export default function FrostMarket() {
                 </div>
               </button>
             </div>
+            ) : (
+              <div>
+              </div>
+            )
+          }
           </div>
         </div>
       </footer>
@@ -1310,7 +1272,7 @@ export default function FrostMarket() {
                 className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center gap-2 py-3 group hover:scale-105 transition-all duration-300"
                 onClick={() => {
                   // In a real app, this would open Discord invite
-                  window.open("https://discord.gg/rK8ZyPuT", "_blank")
+                  window.open(settings.discord_link, "_blank")
                 }}
               >
                 <ExternalLink className="w-4 h-4" />
@@ -1334,7 +1296,7 @@ export default function FrostMarket() {
       </Dialog>
 
       {/* Developer Modal */}
-      <Dialog open={showDeveloperModal} onOpenChange={setShowDeveloperModal}>
+                <Dialog open={showDeveloperModal} onOpenChange={setShowDeveloperModal}>
         <DialogContent
           className={`max-w-md border animate-modal-in ${
             isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200 text-gray-900"
@@ -1388,7 +1350,7 @@ export default function FrostMarket() {
               <Button
                 className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center gap-2 py-3 group hover:scale-105 transition-all duration-300"
                 onClick={() => {
-                  window.open("https://discord.gg/rK8ZyPuT", "_blank")
+                  window.open(settings.discord_link, "_blank")
                 }}
               >
                 <MessageCircle className="w-4 h-4" />

@@ -20,7 +20,14 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'role',
+        'avatar',
+        'banner',
+        'badge', 
+        'status',
         'password',
+        'phone',
+        'address'
     ];
 
     /**
@@ -31,6 +38,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'last_ip',
+        'last_login_at',
+        'is_online',
     ];
 
     /**
@@ -45,4 +55,15 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+    
 }

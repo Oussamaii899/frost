@@ -1,110 +1,148 @@
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+"use client"
 
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import { Head, useForm } from "@inertiajs/react"
+import { LoaderCircle, LogIn } from "lucide-react"
+import type { FormEventHandler } from "react"
+
+import InputError from "@/components/input-error"
+import TextLink from "@/components/text-link"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import AuthLayout from "@/pages/auth/AuthLayout"
 
 type LoginForm = {
-    email: string;
-    password: string;
-    remember: boolean;
-};
+  email: string
+  password: string
+  remember: boolean
+}
 
 interface LoginProps {
-    status?: string;
-    canResetPassword: boolean;
+  status?: string
+  canResetPassword: boolean
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
-        password: '',
-        remember: false,
-    });
+  const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
+    email: "",
+    password: "",
+    remember: false,
+  })
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post(route('login'), {
-            onFinish: () => reset('password'),
-        });
-    };
+  const submit: FormEventHandler = (e) => {
+    e.preventDefault()
+    post(route("login"), {
+      onFinish: () => reset("password"),
+    })
+  }
 
-    return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
-            <Head title="Log in" />
+  return (
+    <AuthLayout title="Log In">
+      <Head title="Log in" />
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            required
-                            autoFocus
-                            tabIndex={1}
-                            autoComplete="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
-                        />
-                        <InputError message={errors.email} />
-                    </div>
+      <Card className="w-full max-w-md bg-slate-800/50 border-slate-700 backdrop-blur-md animate-slide-in-up">
+        <CardHeader className="space-y-3 text-center">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full flex items-center justify-center mb-2">
+            <LogIn className="w-8 h-8 text-cyan-400 animate-pulse-slow" />
+          </div>
+          <CardTitle className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+            Log In
+          </CardTitle>
+          <CardDescription className="text-gray-300 text-base">
+            Enter your credentials to access your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {status && (
+            <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-sm font-medium text-green-400">
+              {status}
+            </div>
+          )}
 
-                    <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
-                            {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                                    Forgot password?
-                                </TextLink>
-                            )}
-                        </div>
-                        <Input
-                            id="password"
-                            type="password"
-                            required
-                            tabIndex={2}
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
-                        />
-                        <InputError message={errors.password} />
-                    </div>
+          <form onSubmit={submit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white">
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                autoFocus
+                autoComplete="email"
+                value={data.email}
+                onChange={(e) => setData("email", e.target.value)}
+                placeholder="email@example.com"
+                className="bg-slate-900/50 border-slate-600 text-white placeholder:text-gray-400 focus:border-primary transition-colors"
+              />
+              <InputError message={errors.email} />
+            </div>
 
-                    <div className="flex items-center space-x-3">
-                        <Checkbox
-                            id="remember"
-                            name="remember"
-                            checked={data.remember}
-                            onClick={() => setData('remember', !data.remember)}
-                            tabIndex={3}
-                        />
-                        <Label htmlFor="remember">Remember me</Label>
-                    </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-white">
+                  Password
+                </Label>
+                {canResetPassword && (
+                  <TextLink
+                    href={route("password.request")}
+                    className="text-xs text-primary hover:text-accent transition-colors"
+                  >
+                    Forgot?
+                  </TextLink>
+                )}
+              </div>
+              <Input
+                id="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                value={data.password}
+                onChange={(e) => setData("password", e.target.value)}
+                placeholder="••••••••"
+                className="bg-slate-900/50 border-slate-600 text-white placeholder:text-gray-400 focus:border-primary transition-colors"
+              />
+              <InputError message={errors.password} />
+            </div>
 
-                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
-                    </Button>
-                </div>
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="remember"
+                name="remember"
+                checked={data.remember}
+                onClick={() => setData("remember", !data.remember)}
+              />
+              <Label htmlFor="remember" className="text-gray-300 cursor-pointer">
+                Remember me
+              </Label>
+            </div>
 
-                <div className="text-center text-sm text-muted-foreground">
-                    Don't have an account?{' '}
-                    <TextLink href={route('register')} tabIndex={5}>
-                        Sign up
-                    </TextLink>
-                </div>
-            </form>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-3 group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
+              disabled={processing}
+            >
+              {processing ? (
+                <>
+                  <LoaderCircle className="h-4 w-4 animate-spin mr-2" />
+                  Logging in...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
 
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
-        </AuthLayout>
-    );
+          <div className="mt-6 text-center text-sm text-gray-400">
+            Don't have an account?{" "}
+            <TextLink href={route("register")} className="text-primary hover:text-accent transition-colors">
+              Sign up
+            </TextLink>
+          </div>
+        </CardContent>
+      </Card>
+    </AuthLayout>
+  )
 }

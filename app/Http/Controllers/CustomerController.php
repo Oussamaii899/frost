@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\Setting;
+use Auth;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class CustomerController extends Controller
+{
+
+    public function homepage(){
+
+        return Inertia::render('welcome', [
+            'Products' => Product::with('category')->get(),
+            'Categories' => Category::all(),
+            'Settings' => Setting::get(),
+            'user' => Auth::user(),
+        ]);
+    }
+
+
+    public function Layout(){
+        $nOrder = Order::where('status', 'Pending')->where('user_id',Auth::user())->count();
+        $nSupport = 10;
+
+        $name = Setting::where('key', 'site_name')->first()?->value;
+
+
+        return response()->json([
+            'nOrders' => $nOrder,
+            'nSupports' => $nSupport,
+            'name' => $name,
+        ]);
+    }
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $stats = [
+            'totalOrders' => $user->orders()->count(),
+            'activeOrders' => $user->orders()->where('status', 'Processing')->count(),
+            'pendingOrders' => $user->orders()->where('status', 'Pending')->count(),
+            'completedOrders' => $user->orders()->where('status', 'Completed')->count(),
+        ];
+
+        $recentOrders = $user->orders()->with('products')->latest()->take(3)->get();
+
+        return Inertia::render('Customer/CustomerDashboard', [
+            'stats' => $stats,
+            'recentOrders' => $recentOrders,
+        ]);
+    }
+
+    public function orders()
+    {
+        $orders = Auth::user()->orders()->with('products')->get();
+
+        return Inertia::render('Customer/CustomerOrders', [
+            'orders' => $orders,
+        ]);
+    }
+
+    public function orderDetail($orderId)
+    {
+        $order = Order::with('products', 'user')->where('order_id', $orderId)->firstOrFail();
+        return Inertia::render('Customer/CustomerOrderDetail', [
+            'order' => $order->load('products', 'user'),
+        ]);
+    }
+
+    public function profile()
+    {
+        return Inertia::render('Customer/CustomerProfile', [
+            'user' => Auth::user(),
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        
+        
+        $user = $request->user();
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:8192',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        $data = collect($validated)->except(['avatar', 'banner'])->toArray();
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = '/storage/' . $avatarPath;
+        }
+
+        if ($request->hasFile('banner')) {
+            $bannerPath = $request->file('banner')->store('banners', 'public');
+            $data['banner'] = '/storage/' .$bannerPath;
+        }
+        $user->update($data);
+
+        return back()->with('success', 'Profile updated successfully');
+    }
+
+    
+    public function support()
+    {
+        return Inertia::render('Customer/CustomerSupport');
+    }
+
+    public function submitSupport()
+    {
+        $validated = request()->validate([
+            'subject' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        // Create support ticket
+        // SupportTicket::create([
+        //     'user_id' => Auth::id(),
+        //     ...$validated
+        // ]);
+
+        return back()->with('success', 'Support ticket submitted successfully');
+    }
+}

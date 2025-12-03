@@ -7,7 +7,15 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Setting;
+use App\Models\Visit;
 use Inertia\Inertia;
+
+use Carbon\Carbon;
+
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomerMail;
+
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -102,7 +110,6 @@ class AdminController extends Controller
         ];
         
 
-                // Return full product list to let frontend paginate client-side
                 $productData = Product::all()->map(function ($p) {
                     $stock = (int) $p->stock;
 
@@ -122,21 +129,59 @@ class AdminController extends Controller
                     ];
                 })->toArray();
 
-            $revenueData = Order::where('status', 'completed')
-            ->get()
-            ->groupBy(function ($date) {
-                return \Carbon\Carbon::parse($date->created_at)->format('M');
-            })
-            ->map(function ($orders, $month) {
-                $total = $orders->sum(function ($o) {
-                    return $o->products->sum(function ($p) {
-                        return $p->pivot->amount * $p->pivot->price;
-                    });
+    $revenueData = Order::where('status', 'completed')
+        ->whereBetween('created_at', [
+            Carbon::today()->subMonths(6)->startOfDay(),
+            Carbon::today()->endOfDay()
+        ])
+        ->get()
+        ->groupBy(function ($order) {
+            return Carbon::parse($order->created_at)->format('Y-m');
+        })
+        ->sortKeys()
+        ->map(function ($orders, $ym) {
+            $monthName = Carbon::parse($ym.'-01')->format('M');
+
+            $total = $orders->sum(function ($o) {
+                return $o->products->sum(function ($p) {
+                    return round($p->pivot->amount * $p->pivot->price, 2);
                 });
-                return ['month' => $month, 'revenue' => $total];
-            })->values()->toArray();
+            });
+
+            return [
+                'month' => $monthName,
+                'revenue' => $total
+            ];
+        })
+        ->values()
+        ->toArray();
 
         
+    $visitData = Visit::all()
+        ->groupBy(function($v) {
+            return $v->created_at->toDateString();
+        })
+        ->flatMap(function($dateGroup) {
+            return $dateGroup->groupBy('country')
+                ->flatMap(function($countryGroup) {
+                    return $countryGroup->groupBy('city')
+                        ->map(function($cityGroup) use ($countryGroup) {
+                            $country = $countryGroup->first()->country ?? 'Unknown';
+                            return [
+                                'date' => $cityGroup->first()->created_at,
+                                'visits' => $cityGroup->count(), 
+                                'country' => $country,
+                                'city' => $cityGroup->first()->city ?? 'Unknown'
+                            ];
+                        })
+                        ->values()
+                        ->toArray();
+                })
+                ->values()
+                ->toArray();
+        })
+        ->values()
+        ->toArray();
         
 
 
@@ -147,6 +192,7 @@ class AdminController extends Controller
             'recentOrders' => $recentOrders,
             'revenueData' => $revenueData,
             'productData' => $productData,
+            'visitData' => $visitData
         ]);
     }
 
@@ -169,7 +215,7 @@ class AdminController extends Controller
     public function productIndex()
     {
         $products = Product::with('category')->get();
-
+        
         return Inertia::render('Admin/AdminProducts', [
             'products' => $products,
         ]);
@@ -276,13 +322,44 @@ class AdminController extends Controller
 
     public function categoryShow($slug)
     {
-        $category = Category::with('products')->where('slug', $slug)->firstOrFail();
+        $category = Category::where('slug', $slug)
+            ->with(['products.orders' => function ($query) {
+                $query->whereIn('status', ['Completed', 'completed']);
+            }])
+            ->firstOrFail();
+
+        $products = $category->products->map(function ($product) {
+            $totalRevenueValue = $product->orders->sum(function ($order) {
+                return ($order->pivot->amount ?? 0) * ($order->pivot->price ?? 0);
+            });
+
+            $totalRevenueValue = round($totalRevenueValue, 2);
+
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'price' => number_format((float) $product->price, 2, '.', ''),
+                'total_revenue' => number_format($totalRevenueValue, 2, '.', ''),
+                'total_revenue_value' => $totalRevenueValue,
+            ];
+        });
+
+        $totalRevenueValue = $products->sum('total_revenue_value');
+        $totalRevenue = number_format((float) $totalRevenueValue, 2, '.', '');
+
         return Inertia::render('Admin/AdminCategoryView', [
-            'category' => $category->load('products'),
-            'totalProducts' => $category->products()->count(),
-            'totalRevenue' => $category->products()->with('orders')->get()->sum(function($product) {
-                return $product->orders->where('status', 'completed')->sum(fn($o) => $o->total * $product->price);
-            }),
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'description' => $category->description,
+                'icon' => $category->icon,
+                'is_active' => $category->is_active,
+                'products' => $products,
+            ],
+            'totalProducts' => $products->count(),
+            'totalRevenue' => $totalRevenue,
         ]);
     }
 
@@ -352,6 +429,19 @@ class AdminController extends Controller
         return back()->with('success', 'Order status updated successfully');
     }
 
+    public function orderInvoice($orderId)
+    {   
+        $order = Order::with('user', 'products')->where('order_id', $orderId)->firstOrFail();
+        $order->load(['user', 'products']);
+
+        $pdf = Pdf::loadView('invoices.order', [
+            'order' => $order,
+        ]);
+
+        return $pdf->stream("invoice-order-{$order->order_id}.pdf");
+    }
+
+
     public function orderDestroy(Order $order)
     {
         $order->delete();
@@ -418,13 +508,14 @@ class AdminController extends Controller
         ]);
     }
 
-    public function customerShow($customer)
+    public function customerShow($custome)
     {
-        
-        return Inertia::render('Admin/AdminCustomerView', [
-            'customer' => User::where('id', $customer)->with('orders')->withCount('orders')->withSum(['orders' => function ($query) {
+        $id = intval(substr($custome, strrpos($custome, '-') + 1));;
+        $customer = User::where('id', $id)->with('orders')->withCount('orders')->withSum(['orders' => function ($query) {
             $query->where('status', 'completed');
-            }], 'total')->first(),
+            }], 'total')->first();
+        return Inertia::render('Admin/AdminCustomerView', [
+            'customer' => $customer,
         ]);
     }
 
@@ -481,4 +572,22 @@ class AdminController extends Controller
 
         return back()->with('success', 'Settings updated successfully');
     }
+
+    public function CustomerMailSend($userId){
+        $user = User::where('id', $userId)->get('email')->first();
+        $customer = User::where('id', $userId)->first();
+        $discord = Setting::where('key', 'discord_link')->first()?->value;
+        $name = Setting::where('key', 'site_name')->first()?->value;
+        $validated = request()->validate([
+            'subject' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        $subject = $validated['subject'];
+        $body = $validated['message'];
+
+        Mail::to($user)->send(new CustomerMail($customer, $subject, $body , $discord, $name));
+        return back()->with('success', 'Emails sent successfully');
+    }
 }
+

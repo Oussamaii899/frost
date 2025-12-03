@@ -474,7 +474,7 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
 
   return (
     <div
-      className={`min-h-screen transition-all duration-500 ${
+      className={`min-h-screen overflow-x-hidden transition-all duration-500 ${
         isDarkMode
           ? "bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900"
           : "bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50"
@@ -489,7 +489,7 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
       </div>
 
       {/* Enhanced Header */}
-           <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+      <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
       <div
         className={`backdrop-blur-xl border-b transition-all duration-500 ${
           isScrolled ? "bg-slate-900/50 border-slate-700/30" : "bg-transparent border-transparent"
@@ -770,7 +770,7 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
               </div>
 
               <div
-                className={`absolute top-1/2 -right-8 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3 hidden lg:block animate-float-slow ${
+                className={`absolute top-1/2 -right-4 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3 hidden lg:block animate-float-slow ${
                   isDarkMode ? "bg-slate-800/90" : "bg-white/90"
                 }`}
               >

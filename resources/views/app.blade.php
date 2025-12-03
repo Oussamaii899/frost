@@ -3,6 +3,15 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="{{ config('app.description') }}">
+
+        <meta property="og:title" content="{{ config('app.name') }}">
+        <meta property="og:description" content="{{ config('app.description') }}">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://frostm.store/">
+        <meta property="og:image" content="https://frostm.store/frost.png">
+
+
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
@@ -30,7 +39,7 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Frost Market') }}</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">

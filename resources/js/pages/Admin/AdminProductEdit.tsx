@@ -1,4 +1,3 @@
-"use client"
 
 import type React from "react"
 
@@ -9,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Trash2 } from "lucide-react"
+import { Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { AdminLayout } from "@/layouts/AdminLayout"
 import { router } from "@inertiajs/react"
@@ -28,6 +27,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
+
+const ArrowLeft = () => (
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+       strokeLinejoin="round" viewBox="0 0 24 24">
+    <path d="M19 12H5" />
+    <path d="M12 19l-7-7 7-7" />
+  </svg>
+)
 
 export default function AdminProductEdit({categories, product}: {categories?: any, product?: any}) {
   const [formData, setFormData] = useState({
@@ -65,7 +72,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
         <div className="flex items-center justify-between animate-slide-in-up">
           <div className="flex items-center gap-4">
             <a href="/admin/products" className="text-gray-400 hover:text-white transition-colors">
-              <ArrowLeft className="w-6 h-6" />
+               <ArrowLeft />
             </a>
             <div>
               <h1 className="text-3xl font-bold text-white">Edit Product</h1>
@@ -87,8 +94,8 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                 variant="outline"
                 className="border-destructive text-destructive hover:bg-destructive/10 gap-2 bg-transparent"
               >
-                <Trash2 className="w-4 h-4" />
-                Delete Product
+                 <Trash2 className="w-4 h-4" />
+                 Delete Product
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-slate-800/50 border-slate-700">
@@ -226,7 +233,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                   className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
                 >
                   <Save className="w-4 h-4" />
-                  Save Changes
+                 Save Changes
                 </Button>
               </div>
             </CardContent>

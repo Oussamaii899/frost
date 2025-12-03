@@ -5,8 +5,27 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Edit2, Eye, Trash2 } from "lucide-react"
 import { AdminLayout } from "@/layouts/AdminLayout"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { router } from "@inertiajs/react"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
 
 export default function AdminCategoryView({ category, totalProducts, totalRevenue }: { category: any, totalProducts: number, totalRevenue: number }) {
+
+  console.log(category);
+  console.log(totalRevenue);
+
+  const handleDeleteProduct = (productId: number) => {
+    router.delete(`/admin/products/${productId}`)
+  }
   return (
     <AdminLayout>
       <AdminHeader />
@@ -113,7 +132,7 @@ export default function AdminCategoryView({ category, totalProducts, totalRevenu
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
-                                <a href={`/admin/products/${product.id}`}>
+                                <a href={`/admin/products/${product.slug}`}>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -123,7 +142,7 @@ export default function AdminCategoryView({ category, totalProducts, totalRevenu
                                     <Eye className="w-4 h-4" />
                                   </Button>
                                 </a>
-                                <a href={`/admin/products/${product.id}/edit`}>
+                                <a href={`/admin/products/${product.slug}/edit`}>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -133,14 +152,41 @@ export default function AdminCategoryView({ category, totalProducts, totalRevenu
                                     <Edit2 className="w-4 h-4" />
                                   </Button>
                                 </a>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-gray-400 hover:text-destructive hover:bg-slate-700/50"
-                                  title="Delete Product"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-gray-400 hover:text-destructive hover:bg-slate-700/50"
+                                      title="Delete Product"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="sm:max-w-[425px]">
+                                    <DialogHeader>
+                                      <DialogTitle>Are you sure?</DialogTitle>
+                                      <DialogDescription>
+                                        This action cannot be undone. This will permanently delete the product.
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter>
+                                      <DialogClose asChild>
+                                        <Button variant="outline">Cancel</Button>
+                                      </DialogClose>
+                                      <DialogClose asChild>
+                                        <Button
+                                          variant="destructive"
+                                          onClick={() => {
+                                            router.delete(`/admin/products/${product.id}`)
+                                          }}
+                                        >
+                                          Delete
+                                        </Button>
+                                      </DialogClose>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
                               </div>
                             </TableCell>
                           </TableRow>

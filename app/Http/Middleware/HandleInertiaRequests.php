@@ -6,6 +6,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
+use App\Models\Setting;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -38,10 +39,10 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
-
+        
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => Setting::where('key', 'site_name')->first()?->value, //config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),

@@ -13,12 +13,24 @@ use App\Http\Middleware\RecordVisitors;
 
 Route::middleware([Maintenance::class,RecordVisitors::class])->group(function () {
     Route::get('/', [CustomerController::class, 'homepage'])->name('home');
+
     Route::post('/accept-cookie', function () {
-    return response()->json(['ok' => true])
-        ->cookie('cookie_accepted', true, 60*24*365);
+    return back()->withCookie(
+        cookie('cookie_accepted', 'true', 60 * 24 * 365)
+    );
+    });
+
+    Route::post('/decline-cookie', function () {
+        return back()->withCookie(
+            cookie('cookie_accepted', 'false', 60 * 24 * 365)
+        );
     });
 
 });
+
+
+
+
 Route::middleware(['auth', 'verified', Maintenance::class])->group(function () {
     
 
@@ -70,6 +82,7 @@ Route::middleware(['auth', 'verified', Admin::class])->group(function () {
     Route::get('/admin/orders/{order}', [AdminController::class, 'orderShow'])->name('admin.orders.show');
     Route::put('/admin/orders/{order}/status', [AdminController::class, 'orderUpdateStatus'])->name('admin.orders.updateStatus');
     
+    
 
     //Route::delete('/admin/orders/{order}', [AdminController::class, 'orderDestroy'])->name('admin.orders.destroy');
     //Route::delete('/admin/orders/{order}/products/{product}', [AdminController::class, 'orderDestroyProduct'])->name('admin.orders.products.destroy');
@@ -79,10 +92,14 @@ Route::middleware(['auth', 'verified', Admin::class])->group(function () {
     Route::get('/admin/customers', [AdminController::class, 'customerIndex'])->name('admin.customers.index');
     Route::get('/admin/customers/{customer}', [AdminController::class, 'customerShow'])->name('admin.customers.show');
     Route::put('/admin/customers/{customer}', [AdminController::class, 'customerUpdateStatus'])->name('admin.customers.update');
+    Route::post('/admin/customers/{customer}/mail', [AdminController::class, 'CustomerMailSend'])->name('admin.customers.mail');
+
 
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::put('/admin/settings', [AdminController::class, 'settingsUpdate'])->name('admin.settings.update');
 });
+Route::middleware(['auth', Admin::class])->get('/admin/orders/{order}/invoice', [AdminController::class, 'orderInvoice'])
+    ->name('admin.orders.invoice')->withoutMiddleware(\App\Http\Middleware\HandleInertiaRequests::class);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

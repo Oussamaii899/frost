@@ -4,29 +4,27 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Str;
 
 class RecordVisitors
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        // 1. Check if user accepted cookies
         if ($request->cookie('cookie_accepted') !== 'true') {
-            return $next($request); // STOP: do not track this user
+            return $next($request);  
         }
 
-        // 2. Create or get visitor_id cookie
         if (!$request->hasCookie('visitor_id')) {
-            $visitorId = (string) \Str::uuid();
-            cookie()->queue(cookie('visitor_id', $visitorId, 525600)); // 1 year
+            $visitorId = (string) Str::uuid();
+            cookie()->queue(cookie('visitor_id', $visitorId, 60*24*365));
         } else {
             $visitorId = $request->cookie('visitor_id');
         }
 
-        // 3. Prepare geoip
         $ip = $request->ip();
         $location = geoip($ip);
 
-        // 4. Log only once
         $exists = \App\Models\Visit::where('visitor_id', $visitorId)->exists();
 
         if (! $exists) {

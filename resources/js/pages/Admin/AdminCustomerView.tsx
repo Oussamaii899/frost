@@ -8,10 +8,11 @@ import { AdminHeader } from "./AdminHeader"
 import { AdminLayout } from "@/layouts/AdminLayout"
 import { useState } from "react"
 import { router } from "@inertiajs/react"
+import {toast, Toaster} from "sonner"
 
 export default function AdminCustomerView({ customer }: { customer: any }) {
   const [status, setStatus] = useState(customer.status)
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState(customer.email)
   const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("")
   const [orderPage, setOrderPage] = useState(0)
@@ -29,20 +30,24 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
   }
 
   const handleSendEmail = () => {
-    if (!email || !subject || !message) {
-      alert("Please fill in all fields")
+    if (!subject || !message) {
+      toast.error("Please fill in all fields");
       return
     }
-    console.log(`Email sent to: ${email}`)
-    alert("Email sent successfully!")
+
+    router.post(route("admin.customers.mail", customer.id), {
+      subject: subject,
+      message: message
+    })
+    console.log(subject, message)
     setEmail("")
     setSubject("")
     setMessage("")
   }
 
-  console.log(customer)
   return (
     <AdminLayout currentPath={`/admin/customers/${customer.name}`}>
+      <Toaster position="top-right"/>
       <AdminHeader />
       <div className="p-4 md:p-6 space-y-6 max-w-7xl ">
         <div className="flex items-center gap-4 animate-slide-in-up">
@@ -222,6 +227,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
                 value={email || customer.email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Customer email"
+                disabled
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm placeholder-gray-500 hover:border-cyan-400 transition-colors focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
               />
             </div>

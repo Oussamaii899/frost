@@ -59,7 +59,7 @@ export function AdminSidebar({ currentPath, isMobile = false, onClose, nOrders =
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 group",
                 isActive
-                  ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30"
+                  ? "bg-gradient-to-r from-cyan-400/20 to-accent/20 text-cyan-400 border border-cyan-400/30"
                   : "text-gray-400 hover:text-white hover:bg-slate-700/50",
               )}
             >

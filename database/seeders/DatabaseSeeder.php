@@ -6,9 +6,12 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\Visit;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -285,7 +288,7 @@ class DatabaseSeeder extends Seeder
         ]);
         DB::table('settings')->insert([
             'key' => 'Meta_title',
-            'value' => 'Frost Store - Premium Digital Services',
+            'value' => 'Frost Market - Premium Digital Services',
         ]);
         DB::table('settings')->insert([
             'key' => 'Meta_description',
@@ -293,7 +296,7 @@ class DatabaseSeeder extends Seeder
         ]); */
 
 
-        DB::table('order_product')->insert(
+/*         DB::table('order_product')->insert(
             Order::where('id', '>', 206)->get()->map(function ($order) {
                 $products = Product::inRandomOrder()->take(rand(1, 5))->get();
                 return $products->map(function ($product) use ($order) {
@@ -306,8 +309,143 @@ class DatabaseSeeder extends Seeder
                 })->toArray();
             })->flatten(1)->toArray()
         );
+ */
 
+        /* DB::table('visits')->insert([
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '102.50.41.99',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Casablanca',
+                'state'        => 'Casablanca-Settat',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subDays(2)->subHours(5),
+                'updated_at'   => now()->subDays(2)->subHours(5),
+            ],
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '102.51.22.14',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Casablanca',
+                'state'        => 'Casablanca-Settat',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subDays(1)->subHours(3),
+                'updated_at'   => now()->subDays(1)->subHours(3),
+            ],
 
+            // Rabat
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '105.73.88.33',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Rabat',
+                'state'        => 'Rabat-Salé-Kénitra',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subHours(10),
+                'updated_at'   => now()->subHours(10),
+            ],
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '105.73.89.11',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Rabat',
+                'state'        => 'Rabat-Salé-Kénitra',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subHours(6),
+                'updated_at'   => now()->subHours(6),
+            ],
 
+            // Marrakech
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '102.77.13.201',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Marrakech',
+                'state'        => 'Marrakech-Safi',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subDays(3)->subHours(2),
+                'updated_at'   => now()->subDays(3)->subHours(2),
+            ],
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '102.77.13.199',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Marrakech',
+                'state'        => 'Marrakech-Safi',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subDays(1)->subHours(12),
+                'updated_at'   => now()->subDays(1)->subHours(12),
+            ],
+
+            // Agadir
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '105.100.33.44',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Agadir',
+                'state'        => 'Souss-Massa',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subDays(4),
+                'updated_at'   => now()->subDays(4),
+            ],
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '105.100.33.52',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Agadir',
+                'state'        => 'Souss-Massa',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subHours(2),
+                'updated_at'   => now()->subHours(2),
+            ],
+
+            // Fes
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '102.89.44.91',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Fes',
+                'state'        => 'Fès-Meknès',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subDays(5)->subHours(3),
+                'updated_at'   => now()->subDays(5)->subHours(3),
+            ],
+            [
+                'visitor_id'   => Str::uuid(),
+                'ip'           => '102.89.44.93',
+                'country'      => 'Morocco',
+                'country_code' => 'MA',
+                'city'         => 'Fes',
+                'state'        => 'Fès-Meknès',
+                'timezone'     => 'Africa/Casablanca',
+                'created_at'   => now()->subHours(1),
+                'updated_at'   => now()->subHours(1),
+            ],
+        ]); */
+        
+
+        // \App\Models\User::factory(10)->create();
+             /* DB::table('order_product')->insert(
+            Order::where('id', '>', 306)->get()->map(function ($order) {
+                $products = Product::inRandomOrder()->take(rand(1, 5))->get();
+                return $products->map(function ($product) use ($order) {
+                    return [
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'amount' => rand(1, 2),
+                        'price' => $product->price,
+                    ];
+                })->toArray();
+            })->flatten(1)->toArray()
+            ); */
     }
 }

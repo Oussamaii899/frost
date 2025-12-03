@@ -1,4 +1,3 @@
-"use client"
 
 import type React from "react"
 
@@ -28,6 +27,9 @@ import { router } from "@inertiajs/react"
 const ITEMS_PER_PAGE = 10
 
 export default function AdminProducts({ products }: { products?: any }) {
+
+
+  console.log(products);
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -40,8 +42,8 @@ export default function AdminProducts({ products }: { products?: any }) {
     if (!searchQuery.trim()) return products || []
     return (products || []).filter(
       (product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category?.name?.toLowerCase().includes(searchQuery.toLowerCase()),
     )
   }, [products, searchQuery])
 
@@ -102,7 +104,7 @@ export default function AdminProducts({ products }: { products?: any }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedProducts.map((product) => (
+                  {paginatedProducts?.map((product) => (
                     <TableRow key={product.id} className="border-slate-700 hover:bg-slate-800/50 transition-colors">
                       <TableCell className="text-white font-medium text-sm">{product.name}</TableCell>
                       <TableCell>

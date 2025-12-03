@@ -102,7 +102,7 @@ export default function AdminCustomers({ customers }: { customers: any[] }) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <a href={`/admin/customers/${customer.id}`}>
+                        <a href={`/admin/customers/${customer.name}-${customer.id}`}>
                           <Button
                             variant="ghost"
                             size="sm"

@@ -7,6 +7,20 @@ const Bell = () => (
   </svg>
 )
 
+type ActivityLog = {
+  id: number;
+  log_name: string;
+  description: string;
+  event: string | null;
+  subject_id: number | null;
+  subject_type: string | null;
+  causer_id: number | null;
+  causer_type: string | null;
+  properties: any;
+  created_at: string;
+  updated_at: string;
+};
+
 export function AdminHeader() {
   const [showNotifications, setShowNotifications] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -30,11 +44,25 @@ export function AdminHeader() {
     }
   }, [showNotifications])
 
-  const notifications = [
-    { id: 1, message: "New order received #1234", time: "5 minutes ago" },
-    { id: 2, message: "Product inventory low", time: "1 hour ago" },
-    { id: 3, message: "New customer registered", time: "3 hours ago" },
-  ]
+
+    const [notif,setNotif] = useState<ActivityLog[]>([]);
+  
+    useEffect(() => {
+      const fetchHeaderData = async ()=>{
+        try {
+          const response = await fetch(route('admin.notifications'))
+          const data = await response.json()
+          setNotif(data.notif);
+          console.log(data.notif)
+        } catch (error) {
+          console.error('Failed to fetch sidebar data:', error)
+        }
+      }
+  
+      fetchHeaderData()
+      const interval1 = setInterval(fetchHeaderData, 30000)
+      return () => clearInterval(interval1)
+    }, [])
 
   return (
     <header className="h-20 border-b border-slate-700 bg-slate-800/30 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40">
@@ -61,20 +89,37 @@ export function AdminHeader() {
                 <h3 className="text-white font-semibold">Notifications</h3>
               </div>
               <div className="max-h-80 overflow-y-auto">
-                {notifications.map((notification) => (
+                {notif.map((n) => (
                   <div
-                    key={notification.id}
+                    key={n.id}
                     className="p-3 border-b border-slate-700 hover:bg-slate-700/30 transition-colors cursor-pointer"
                   >
-                    <p className="text-white text-sm">{notification.message}</p>
-                    <p className="text-gray-400 text-xs mt-1">{notification.time}</p>
-                  </div>
+                    <p className="text-white text-sm">
+                      {
+                        n.log_name === 'Product' && n.event === 'created' ? `New ${n.log_name} added` : 
+                          n.log_name === 'Product' && n.event === 'updated' ? `${n.log_name} - ${n.properties.name} updated` :
+                            n.log_name === 'Product' && n.event === 'deleted' ? `Product - ${n.properties.name} deleted` : 
+                        n.log_name === 'Order' && n.event === 'created' ? `New ${n.log_name} added` :
+                          n.log_name === 'Order' && n.event === 'updated' ? `${n.log_name} - ${n.properties.order_id} updated` :
+                            n.log_name === 'Order' && n.event === 'deleted' ? `Order - ${n.properties.order_id} deleted` :
+                        n.log_name === 'Customer' && n.event === 'updated' ? `${n.log_name} - ${n.properties.name} updated` :
+                          n.log_name === 'Customer' && n.event === 'mail_sent' && n.description === 'Customer email sent successfully' ? `${n.log_name} - ${n.properties.name} sent an email` :
+                          n.log_name +'-'+ n.description
+                      }
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">{
+                      new Date().getMonth() === new Date(n.created_at).getMonth() ?
+                        new Date().getDay() === new Date(n.created_at).getDay() ? 
+                          new Date().getHours() === new Date(n.created_at).getHours() ? 
+                            new Date().getMinutes() === new Date(n.created_at).getMinutes() ?
+                              "just now" : `${new Date().getMinutes() - new Date(n.created_at).getMinutes()} min ago`
+                            : `${new Date().getHours() - new Date(n.created_at).getHours()} hours ago`
+                          : `${new Date().getDay() - new Date(n.created_at).getDay()} days ago`
+                        : `${new Date(n.created_at).toDateString()}`
+
+                      }</p>
+                  </div> 
                 ))}
-              </div>
-              <div className="p-3 text-center">
-                <a href="#" className="text-primary text-sm hover:underline">
-                  View all notifications
-                </a>
               </div>
             </div>
           )}

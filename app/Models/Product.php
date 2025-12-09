@@ -29,4 +29,8 @@ class Product extends Model
     {
         return $this->belongsToMany(Order::class)->withPivot('amount', 'price');
     }
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
 }

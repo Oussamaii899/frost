@@ -84,19 +84,9 @@
             font-size: 13px;
         }
 
-        .meta-item {
-            text-align: right;
-        }
-
-        .meta-label {
-            color: #6b7280;
-            font-size: 11px;
-        }
-
-        .meta-value {
-            color: #1f2937;
-            font-weight: 600;
-        }
+        .meta-item { text-align: right; }
+        .meta-label { color: #6b7280; font-size: 11px; }
+        .meta-value { color: #1f2937; font-weight: 600; }
 
         /* Customer Section */
         .info-section {
@@ -168,13 +158,8 @@
             font-size: 13px;
         }
 
-        .right-align {
-            text-align: right;
-        }
-
-        .bold {
-            font-weight: 600;
-        }
+        .right-align { text-align: right; }
+        .bold { font-weight: 600; }
 
         /* Summary */
         .summary {
@@ -198,15 +183,8 @@
             font-size: 13px;
         }
 
-        .summary-label {
-            color: #6b7280;
-        }
-
-        .summary-value {
-            color: #1f2937;
-            font-weight: 600;
-            text-align: right;
-        }
+        .summary-label { color: #6b7280; }
+        .summary-value { color: #1f2937; font-weight: 600; }
 
         .summary-row.total {
             border-top: 2px solid #e5e7eb;
@@ -215,16 +193,8 @@
             font-size: 16px;
         }
 
-        .summary-row.total .summary-label {
-            color: #111827;
-            font-weight: 700;
-        }
-
-        .summary-row.total .summary-value {
-            color: #06b6d4;
-            font-weight: 700;
-            font-size: 18px;
-        }
+        .summary-row.total .summary-label { color: #111827; font-weight: 700; }
+        .summary-row.total .summary-value { color: #06b6d4; font-weight: 700; font-size: 18px; }
 
         /* Page 2 */
         .page-2-header {
@@ -235,11 +205,7 @@
             border-bottom: 1px solid #e5e7eb;
         }
 
-        .section {
-            margin-bottom: 30px;
-            break-inside: avoid;
-        }
-
+        .section { margin-bottom: 30px; break-inside: avoid; }
         .section h3 {
             font-size: 14px;
             font-weight: 600;
@@ -254,11 +220,9 @@
 
         .section h3::before {
             content: '';
-            display: inline-block;
             width: 3px;
             height: 16px;
             background: #06b6d4;
-            flex-shrink: 0;
         }
 
         .section-text {
@@ -300,279 +264,220 @@
 
         /* Status Pills */
         .status-pill {
-            display: inline-flex;
-            align-items: center;
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
-            background: #f3f4f6;
-            color: #111827;
+            display: inline-block;
         }
 
-        .status-paid {
-            background: #ecfdf3;
-            color: #16a34a;
-        }
+        .status-paid { background: #ecfdf3; color: #16a34a; }
+        .status-pending { background: #fffbeb; color: #d97706; }
 
-        .status-pending {
-            background: #fffbeb;
-            color: #d97706;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .page {
-                padding: 20px;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .invoice-details {
-                text-align: left;
-            }
-
-            .info-section {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .invoice-meta {
-                grid-template-columns: 1fr;
-                text-align: left;
-            }
-
-            .meta-item {
-                text-align: left;
-            }
-
-            .invoice-title {
-                font-size: 24px;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            table th,
-            table td {
-                padding: 8px;
-            }
-
-            .summary-box {
-                width: 100%;
-                max-width: 320px;
-            }
-        }
-
-        @media print {
-            body {
-                background: white;
-                margin: 0;
-                padding: 0;
-            }
-
-            .container {
-                max-width: 100%;
-                margin: 0;
-                box-shadow: none;
-            }
-        }
     </style>
 </head>
+
 <body>
-    @php
-        $customer = $order->user;
-        $customerName = trim($customer->name ?? '') ?: 'Customer';
-        $customerEmail = trim($customer->email ?? '') ?: 'N/A';
-        $customerAddress = trim($customer->address ?? '') ?: 'N/A';
 
-        $products = $order->products ?? collect();
-        $lineSubtotal = $products->sum(function ($product) {
-            return ($product->pivot->price ?? $product->price ?? 0) * ($product->pivot->amount ?? 0);
-        });
+@php
+    /** CUSTOMER & ORDER BASIC INFO **/
+    $customer = $order->user;
+    $customerName = $customer->name ?? 'Customer';
+    $customerEmail = $customer->email ?? 'N/A';
 
-        $tax = $order->tax_total ?? 0;
-        $shipping = $order->shipping_total ?? 0;
-        $grandTotal = $order->total ?? ($lineSubtotal + $tax + $shipping);
-        $discount = max(0, ($lineSubtotal + $tax + $shipping) - $grandTotal);
+    $products = $order->products ?? collect();
+    $lineSubtotal = $products->sum(fn($p) => ($p->pivot->price ?? 0) * ($p->pivot->amount ?? 0));
 
-        $invoiceDate = $order->created_at ? \Illuminate\Support\Carbon::parse($order->created_at) : null;
-        $orderStatus = $order->status ?? 'Pending';
-        $paymentStatus = match (strtolower($orderStatus)) {
-            'completed' => 'Paid',
-            'cancelled' => 'Refunded',
-            default => 'Pending',
-        };
-    @endphp
+    $tax = $order->tax_total ?? 0;
+    $shipping = $order->shipping_total ?? 0;
+    $grandTotal = $order->total ?? ($lineSubtotal + $tax + $shipping);
 
-    <!-- PAGE 1 -->
-    <div class="container">
-        <div class="page">
-            <!-- Header -->
-            <div class="header">
-                <div class="header-left">
-                    <img src="{{ public_path('frost.png') }}" alt="{{ config('app.name') }}" class="company-logo">
-                    <div class="company-name">{{ config('app.name') }}</div>
-                    <div class="company-info">
-                        <div>support@frostm.store</div>
-                        <div>+212 6 10 20 30 34</div>
-                    </div>
-                </div>
-                <div class="invoice-details">
-                    <div class="invoice-title">INVOICE</div>
-                    <div class="invoice-meta">
-                        <div class="meta-item">
-                            <div class="meta-label">Invoice No.</div>
-                            <div class="meta-value">#{{ $order->order_id ?? $order->id }}</div>
-                        </div>
-                        <div class="meta-item">
-                            <div class="meta-label">Date</div>
-                            <div class="meta-value">{{$order->created_at->format('M d, Y') }}</div>
-                        </div>
-                    </div>
+    $status = strtolower($order->status);
+    $paymentStatus = $status === "completed" ? "Paid" : ($status === "cancelled" ? "Refunded" : "Pending");
+
+    /** PAYPAL LOGS — same decoding as AdminOrderDetail **/
+    $log = $order->paymentLogs ?? $order->payment_logs ?? null;
+    $logArray = $log ? (is_array($log) ? $log : $log->toArray()) : [];
+
+    function safeJson($v) {
+        if (!$v) return [];
+        if (is_array($v)) return $v;
+        try { return json_decode($v, true) ?: []; }
+        catch(Exception $e) { return []; }
+    }
+
+    $paymentSource = safeJson($logArray['payment_source'] ?? null)['paypal'] ?? [];
+    $purchaseUnits = safeJson($logArray['purchase_units'] ?? null)[0] ?? [];
+    $payer         = safeJson($logArray['payer'] ?? null) ?? [];
+    $shippingAddr  = $purchaseUnits['shipping'] ?? [];
+    $capture       = $purchaseUnits['payments']['captures'][0] ?? [];
+@endphp
+
+<!-- PAGE 1 -->
+<div class="container">
+    <div class="page">
+        
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <img src="{{ public_path('frost.png') }}" class="company-logo">
+                <div class="company-name">{{ config('app.name') }}</div>
+                <div class="company-info">
+                    <div>support@frostm.store</div>
+                    <div>+212 6 10 20 30 34</div>
                 </div>
             </div>
 
-            <!-- Customer Info -->
-            <div class="info-section">
-                <div class="info-box">
-                    <div class="section-title">Bill To</div>
-                    <div class="section-content">
-                        <strong>{{ $customerName }}</strong>
-                        <div>{{ $customerEmail }}</div>
-                        <div>{{ $order->user->address ?? 'N/A' }}</div>
-                    </div>
-                    <hr style="margin: 20px 0;">
-                    <div class="section-title">Order Status</div>
-                    <div class="section-content">
-                        <div style="margin-bottom: 8px;">
-                            <strong>Order ID:</strong> #{{ $order->order_id ?? $order->id }}
-                        </div>
-                        <div style="margin-bottom: 8px;">
-                            <strong>Order Date:</strong> {{ $order->created_at->format('M d, Y') }} - {{ $order->created_at->format('H:i A') }}
-                        </div>
-                        <div>
-                            <span class="status-pill status-{{ strtolower($paymentStatus) === 'paid' ? 'paid' : 'pending' }}">
-                                {{ $paymentStatus }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+            <div class="invoice-details">
+                <div class="invoice-title">INVOICE</div>
 
-            </div>
-
-            <!-- Products Table -->
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 50%;">Product</th>
-                        <th style="width: 15%;">Price</th>
-                        <th style="width: 15%;">Qty</th>
-                        <th style="width: 20%;" class="right-align">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($products as $product)
-                        @php
-                            $price = $product->pivot->price ?? $product->price ?? 0;
-                            $quantity = $product->pivot->amount ?? 0;
-                            $total = $price * $quantity;
-                        @endphp
-                        <tr>
-                            <td>{{ $product->name }}</td>
-                            <td>${{ number_format($price, 2) }}</td>
-                            <td>{{ $quantity }}</td>
-                            <td class="right-align bold">${{ number_format($total, 2) }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="right-align">No products found</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
-            <!-- Summary -->
-            <div class="summary">
-                <div class="summary-box">
-                    <div class="summary-row">
-                        <span class="summary-label">Subtotal</span>
-                        <span class="summary-value">${{ number_format($lineSubtotal, 2) }}</span>
+                <div class="invoice-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Invoice No.</div>
+                        <div class="meta-value">#{{ $order->order_id }}</div>
                     </div>
-                    @if ($tax > 0)
-                        <div class="summary-row">
-                            <span class="summary-label">Tax</span>
-                            <span class="summary-value">${{ number_format($tax, 2) }}</span>
-                        </div>
-                    @endif
-                    @if ($shipping > 0)
-                        <div class="summary-row">
-                            <span class="summary-label">Shipping</span>
-                            <span class="summary-value">${{ number_format($shipping, 2) }}</span>
-                        </div>
-                    @endif
-                    @if ($discount > 0)
-                        <div class="summary-row">
-                            <span class="summary-label">Discount</span>
-                            <span class="summary-value">-${{ number_format($discount, 2) }}</span>
-                        </div>
-                    @endif
-                    <div class="summary-row total">
-                        <span class="summary-label">Total</span>
-                        <span class="summary-value">${{ number_format($grandTotal, 2) }}</span>
+                    <div class="meta-item">
+                        <div class="meta-label">Date</div>
+                        <div class="meta-value">{{ $order->created_at->format('M d, Y') }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PAGE 2 -->
-        <div class="page">
-            <div class="page-2-header">
-                Invoice #{{ $order->order_id ?? $order->id }} • {{ $invoiceDate?->format('M d, Y') }} • Page 2 of 2
-            </div>
+        <!-- Customer Info -->
+        <div class="info-section">
 
-            <!-- Terms -->
-            <div class="section">
-                <h3>Terms & Conditions</h3>
-                <ul class="terms-list">
-                    <li>Payment is due upon receipt of invoice</li>
-                    <li>All sales are final and non-refundable except where required by law</li>
-                    <li>Products are delivered as digital content instantly upon purchase</li>
-                    <li>Customer agrees to terms of service upon purchase</li>
-                </ul>
-            </div>
-
-            <!-- Payment Info -->
-            <div class="section">
-                <h3>Payment Information</h3>
-                <div class="section-text">
-                    <strong>Amount Due:</strong> ${{ number_format($grandTotal, 2) }}<br>
-                    <strong>Payment Status:</strong> {{ $paymentStatus }}<br>
-                    <strong>Invoice Date:</strong> {{ $invoiceDate?->format('M d, Y') ?? 'N/A' }}
+            <div class="info-box">
+                <div class="section-title">Bill To</div>
+                <div class="section-content">
+                    <strong>{{ $customerName }}</strong>
+                    <div>{{ $customerEmail }}</div>
+                </div>
+                <hr style="margin: 20px 0;">
+                <div class="section-title">Order Status</div>
+                <div class="section-content">
+                    <strong>Order ID:</strong> {{ $order->order_id }}
+                    <strong>Date:</strong> {{ $order->created_at->format('M d, Y - H:i A') }}
+                    <span class="status-pill {{ $paymentStatus === 'Paid' ? 'status-paid' : 'status-pending' }}">
+                        {{ $paymentStatus }}
+                    </span>
                 </div>
             </div>
 
-            <!-- Support -->
-            <div class="section">
-                <h3>Support</h3>
-                <div class="section-text">
-                    Need help? Contact our support team:<br><br>
-                    <strong>Email:</strong> support@frostm.store<br>
-                    <strong>Discord:</strong> Join our server for instant support<br>
-                    <strong>Response Time:</strong> 24/7 availability
+        </div>
+
+        <!-- Products Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Product</th>
+                    <th style="width: 15%;">Price</th>
+                    <th style="width: 15%;">Qty</th>
+                    <th style="width: 20%;" class="right-align">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach($products as $product)
+                @php
+                    $price = $product->pivot->price;
+                    $qty   = $product->pivot->amount;
+                    $total = $price * $qty;
+                @endphp
+                <tr>
+                    <td>{{ $product->name }}</td>
+                    <td>${{ number_format($price,2) }}</td>
+                    <td>{{ $qty }}</td>
+                    <td class="right-align bold">${{ number_format($total,2) }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div class="summary">
+            <div class="summary-box">
+                <div class="summary-row"><span class="summary-label">Subtotal</span><span class="summary-value">${{ number_format($lineSubtotal,2) }}</span></div>
+
+                @if($tax > 0)
+                <div class="summary-row"><span class="summary-label">Tax</span><span class="summary-value">${{ number_format($tax,2) }}</span></div>
+                @endif
+
+                @if($shipping > 0)
+                <div class="summary-row"><span class="summary-label">Shipping</span><span class="summary-value">${{ number_format($shipping,2) }}</span></div>
+                @endif
+
+                <div class="summary-row total">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value">${{ number_format($grandTotal,2) }}</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Footer -->
-            <div class="footer">
-                <div>Thank you for your business!</div>
-                <div style="margin-top: 10px;">© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</div>
+        <!-- PAYMENT DETAILS (added new section) -->
+        <div class="section" style="margin-top:40px;">
+            <h3>Payment Details</h3>
+
+            <div class="section-text">
+                <strong>Payment Status:</strong> {{ ucfirst($paymentStatus) }}<br>
+
+                @if(!empty($capture))
+                    <strong>Capture ID:</strong> {{ $capture['id'] ?? 'N/A' }}<br>
+                    <strong>Amount Paid:</strong> {{ $capture['amount']['currency_code'] ?? '' }} {{ $capture['amount']['value'] ?? '' }}<br>
+                    <strong>Captured At:</strong> {{ $capture['create_time'] ?? 'N/A' }}<br>
+                @endif
+
+                <hr style="margin:15px 0;">
+
+                <h4>Payer Information</h4>
+                <strong>Name:</strong> {{ $payer['name']['given_name'] ?? '' }} {{ $payer['name']['surname'] ?? '' }}<br>
+                <strong>Email:</strong> {{ $payer['email_address'] ?? 'N/A' }}<br>
+                <strong>Country:</strong> {{ $payer['address']['country_code'] ?? 'N/A' }}<br>
+
+                @if(!empty($shippingAddr))
+                <hr style="margin:15px 0;">
+                <h4>Billing / Shipping Address</h4>
+                {{ $shippingAddr['name']['full_name'] ?? '' }}<br>
+                {{ $shippingAddr['address']['address_line_1'] ?? '' }}<br>
+                {{ $shippingAddr['address']['admin_area_2'] ?? '' }},
+                {{ $shippingAddr['address']['postal_code'] ?? '' }}<br>
+                {{ $shippingAddr['address']['country_code'] ?? '' }}<br>
+                @endif
             </div>
+        </div>
+
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="page">
+        <div class="page-2-header">
+            Invoice #{{ $order->order_id }} • Page 2 of 2
+        </div>
+
+        <div class="section">
+            <h3>Terms & Conditions</h3>
+            <ul class="terms-list">
+                <li>Payment is due upon receipt.</li>
+                <li>All digital sales are final.</li>
+                <li>Instant delivery upon completion of payment.</li>
+                <li>By purchasing, you agree to our Terms of Service.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>Support</h3>
+            <div class="section-text">
+                Need help? Contact us:<br><br>
+                <strong>Email:</strong> support@frostm.store<br>
+                <strong>Discord:</strong> Join our server<br>
+                <strong>Response:</strong> Usually under 1 hour
+            </div>
+        </div>
+
+        <div class="footer">
+            © {{ date('Y') }} {{ config('app.name') }} — All rights reserved.
         </div>
     </div>
+</div>
+
 </body>
 </html>

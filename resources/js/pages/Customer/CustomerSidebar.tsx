@@ -46,8 +46,8 @@ export function CustomerSidebar({
 
       <aside
         className={cn(
-          "fixed md:static top-0 left-0 z-50 h-screen w-64 min-h-screen bg-gradient-to-b from-slate-800/50 to-slate-900/50 border-r border-slate-700 flex flex-col backdrop-blur-md transition-transform duration-300 md:translate-x-0",
-          isMobile && !isOpen && "-translate-x-full",
+          "fixed top-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-slate-800/50 to-slate-900/50 border-r border-slate-700 flex flex-col backdrop-blur-md transition-transform duration-300 md:translate-x-0",
+          isMobile && !isOpen && "-translate-x-full"
         )}
       >
         <div className="p-6 border-b border-slate-700 space-y-1 flex items-center justify-between">
@@ -89,11 +89,11 @@ export function CustomerSidebar({
               >
                 <item.icon className={cn("w-5 h-5 flex-shrink-0")} />
                 <span className="flex-1">{item.label}</span>
-                {item.notificationCount && item.notificationCount > 0 && (
+                {item.notificationCount && item.notificationCount > 0 ? (
                   <span className="bg-cyan-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">
                     {item.notificationCount > 99 ? "99+" : item.notificationCount}
                   </span>
-                )}
+                ): (null)}
               </a>
             )
           })}

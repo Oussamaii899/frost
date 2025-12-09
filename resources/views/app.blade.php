@@ -12,6 +12,13 @@
         <meta property="og:image" content="https://frostm.store/frost.png">
 
 
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ config('app.name') }}">
+        <meta name="twitter:description" content="{{ config('app.description') }}">
+        <meta name="twitter:image" content="https://frostm.store/frost.png">
+
+
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>

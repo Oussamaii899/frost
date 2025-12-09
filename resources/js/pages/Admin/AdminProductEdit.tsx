@@ -44,6 +44,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
       originalPrice: product.originalPrice,
       stock: product.stock,
       description: product.description,
+      badge: product.badge
     })  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +57,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
       originalPrice: formData.originalPrice,
       stock: formData.stock,
       description: formData.description,
+      badge: formData.badge
     })
     
   }
@@ -204,6 +206,22 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                   className="bg-slate-900/50 border-slate-600 text-white"
                 />
               </div>
+              <div className="space-y-2">
+              <Label htmlFor="badge" className="text-white">
+                Badge Status
+              </Label>
+              <Select value={formData.badge} onValueChange={(value) => setFormData({ ...formData, badge: value })}>
+                <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="not_recommended">Not Recommended</SelectItem>
+                  <SelectItem value="recommended">Recommended</SelectItem>
+                  <SelectItem value="popular">Popular</SelectItem>
+                  <SelectItem value="new">New</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-white">

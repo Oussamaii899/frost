@@ -8,9 +8,16 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Setting;
 use App\Models\Visit;
+use App\Models\Stock;
 use Inertia\Inertia;
 
+
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
+
+use Illuminate\Http\Request;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerMail;
@@ -25,7 +32,7 @@ class AdminController extends Controller
 
         //revenue calculation
         $thisMonthR = Order::where('status', 'completed')
-            ->whereDate('created_at', '>=', now()->subMonth())
+            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
             ->with('products')
             ->get()
             ->sum(function ($o) {
@@ -35,7 +42,7 @@ class AdminController extends Controller
             });
         
         $beforeLastMonthR = Order::where('status', 'completed')
-            ->whereDate('created_at', '<', now()->subMonth())
+            ->whereBetween('created_at', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])
             ->with('products')
             ->get()
             ->sum(function ($o) {
@@ -50,8 +57,8 @@ class AdminController extends Controller
         
 
         //order calculation
-        $thisMonthO = Order::whereDate('created_at', '>=', now()->subMonth())->count();
-        $beforeLastMonthO = Order::whereDate('created_at', '<', now()->subMonth())->count();
+        $thisMonthO = Order::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count();
+        $beforeLastMonthO = Order::whereBetween('created_at', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])->count();
         $trendO = $beforeLastMonthO > 0
             ? round((($thisMonthO - $beforeLastMonthO) / $beforeLastMonthO) * 100, 1)
             : 0;
@@ -60,8 +67,8 @@ class AdminController extends Controller
 
 
         //customers calculation
-        $thisMonthC = User::where('role', 'customer')->whereDate('created_at', '>=', now()->subMonth())->count();
-        $beforeLastMonthC = User::where('role', 'customer')->whereDate('created_at', '<', now()->subMonth())->count();
+        $thisMonthC = User::where('role', 'customer')->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count();
+        $beforeLastMonthC = User::where('role', 'customer')->whereBetween('created_at', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])->count();
         $trendC = $beforeLastMonthC > 0
             ? round((($thisMonthC - $beforeLastMonthC) / $beforeLastMonthC) * 100, 1)
             : 0;
@@ -69,11 +76,11 @@ class AdminController extends Controller
 
 
         //stock calculation
-        $thisMonthS = Product::whereDate('created_at', '>=', now()->subMonth())->sum('stock');
-        $beforeLastMonthS = Product::whereDate('created_at', '<', now()->subMonth())->sum('stock');
+/*         $thisMonthS = Product::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->sum('stock');
+        $beforeLastMonthS = Product::whereBetween('created_at', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])->sum('stock');
         $trendS = $beforeLastMonthS > 0
             ? round((($thisMonthS - $beforeLastMonthS) / $beforeLastMonthS) * 100, 1)
-            : 0;
+            : 0; */
         $stats = [
             [
                 'title' => 'Total Revenue',
@@ -85,7 +92,7 @@ class AdminController extends Controller
             ],
             [
                 'title' => 'Total Orders',
-                'value' => Order::count(),
+                'value' => Order::where('status', 'completed')->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
                 'icon' => 'ShoppingCart',
                 'trend' => $trendO . '% from last month',
                 'trendUp' => $trendO >= 0 ? true : false,
@@ -95,13 +102,13 @@ class AdminController extends Controller
                 'title' => 'Total Stock Items',
                 'value' => Product::sum('stock'),
                 'icon' => 'Package',
-                'trend' => $trendS . '% from last month',
-                'trendUp' => $trendS >= 0 ? true : false,
+                'trend' => 'Stock Items',
+                'trendUp' => Product::sum('stock') >= 20 ? true : false,
                 'delay' => '0.3s',
             ],
             [
                 'title' => 'Total Customers',
-                'value' => User::where('role', 'customer')->count(),
+                'value' => User::where('role', 'customer')->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
                 'icon' => 'Users',
                 'trend' => $trendC . '% from last month',
                 'trendUp' => $trendC >= 0 ? true : false,
@@ -211,6 +218,14 @@ class AdminController extends Controller
         ]);
     }
 
+    public function notification(){
+        $notif = Activity::latest()->take(4)->get();
+
+        return response()->json([
+            'notif' => $notif,
+        ]);
+    }
+
 
     public function productIndex()
     {
@@ -239,18 +254,57 @@ class AdminController extends Controller
             'description' => 'nullable|string',
         ]);
         $validated['slug'] = \Str::slug($validated['name']) . '-' . uniqid();
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        if($product->wasRecentlyCreated) {
+                    Activity::create([
+                        "log_name" => "Product",
+                        "description" => "Product created",
+                        "subject_type" => Product::class,
+                        "event" => "created",
+                        "subject_id" => Product::latest()->first()->id,
+                        "causer_type" => User::class,
+                        "causer_id" => auth()->user()->id,
+                        "properties" => $validated
+                    ]);
+        }
 
         return redirect('/admin/products')->with('success', 'Product created successfully');
     }
 
     public function productShow($slug)
     {
-        $product = Product::with('category')->where('slug', $slug)->firstOrFail();
+        $product = Product::with('category', 'stocks')->where('slug', $slug)->firstOrFail();
         return Inertia::render('Admin/AdminProductView', [
             'product' => $product,
         ]);
     }   
+
+
+    public function StockAdd(Product $product, Request $request)
+    {
+        $stocks = $request->stocks;
+        foreach ($stocks as $stock) {
+            
+            $product->stocks()->create([
+                'product_id' => $product->id,
+                'data' => json_encode($stock),
+                'created_at' => now()
+            ]);
+
+            $product->increment('stock');
+        }
+
+        return back()->with('success', 'Stock added successfully');
+    }
+
+    public function StockDelete(Product $product, Request $request)
+    {
+        $stock = Stock::find($request->stock);
+        $stock->delete();  
+        $product->decrement('stock');     
+        return back()->with('success', 'Stock deleted successfully');
+    }
 
     public function productEdit($slug)
     {
@@ -269,20 +323,49 @@ class AdminController extends Controller
             'originalPrice' => 'required|numeric',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
+            'badge' => 'nullable|string',
             'description' => 'nullable|string',
         ]);
 
         $product->update($validated);
 
+        if($product->wasChanged()) {
+            Activity::create([
+                "log_name" => "Product",
+                "description" => "Product updated",
+                "event" => "updated",
+                "subject_type" => Product::class,
+                "subject_id" => $product->id,
+                "causer_type" => User::class,
+                "causer_id" => auth()->user()->id,
+                "properties" => $product
+            ]);  
+        };
         return redirect('/admin/products')->with('success', 'Product updated successfully');
     }
 
     public function productDestroy(Product $product)
     {
         $product->delete();
-
+        if(!Product::where('id', $product->id)->exists()) {
+            Activity::create([
+                "log_name" => "Product",
+                "description" => "Product deleted",
+                "event" => "deleted",
+                "subject_type" => Product::class,
+                "subject_id" => $product->id,
+                "causer_type" => User::class,
+                "causer_id" => auth()->user()->id,
+                "properties" => $product
+            ]);
+        }
         return redirect('/admin/products')->with('success', 'Product deleted successfully');
     }
+
+
+
+
+
 
     public function categoryIndex()
     {
@@ -315,7 +398,19 @@ class AdminController extends Controller
         }
 
 
-        Category::create($validated);
+        $category =Category::create($validated);
+        if($category->wasRecentlyCreated) {
+            Activity::create([
+                "log_name" => "Category",
+                "description" => "Category created",
+                "event" => "created",
+                "subject_type" => Category::class,
+                "subject_id" => Category::latest()->first()->id,
+                "causer_type" => User::class,
+                "causer_id" => auth()->user()->id,
+                "properties" => $validated
+            ]);
+        };
 
         return redirect('/admin/categories')->with('success', 'Category created successfully');
     }
@@ -388,20 +483,42 @@ class AdminController extends Controller
         }
 
         $category->update($validated);
-
+        if($category->wasChanged()) {
+          Activity::create([
+             "log_name" => "Category",
+             "description" => "Category updated",
+             "subject_type" => Category::class,
+             "subject_id" => $category->id,
+             "event" => "updated",
+             "causer_type" => User::class,
+             "causer_id" => auth()->user()->id,
+             "properties" => $category
+          ]);
+        };
         return redirect('/admin/categories')->with('success', 'Category updated successfully');
     }
 
     public function categoryDestroy(Category $category)
     {
         $category->delete();
-
+        if(!Category::where('id', $category->id)->exists()) {
+            Activity::create([
+                "log_name" => "Category",
+                "description" => "Category deleted",
+                "subject_type" => Category::class,
+                "subject_id" => $category->id,
+                "event" => "deleted",
+                "causer_type" => User::class,
+                "causer_id" => auth()->user()->id,
+                "properties" => $category
+            ]);
+        }
         return redirect('/admin/categories')->with('success', 'Category deleted successfully');
     }
 
     public function orderIndex()
     {
-        $orders = Order::with('user')->get();
+        $orders = Order::with('user')->orderBy('created_at', 'desc')->get();
         $this->reloadOrders();
         return Inertia::render('Admin/AdminOrders', [
             'orders' => $orders,
@@ -410,10 +527,10 @@ class AdminController extends Controller
 
     public function orderShow($orderId)
     {
-        $order = Order::with('products', 'user')->where('order_id', $orderId)->firstOrFail();
+        $order = Order::with('products', 'user', 'paymentLogs')->where('order_id', $orderId)->firstOrFail();
         $this->reloadOrders();
         return Inertia::render('Admin/AdminOrderDetail', [  
-            'order' => $order->load('products', 'user'),
+            'order' => $order->load('products', 'user', 'paymentLogs' ),
         ]);
     }
 
@@ -425,25 +542,46 @@ class AdminController extends Controller
 
         $order->update($validated);
         $this->reloadOrders();
-
+        if($order->wasChanged()) {
+          Activity::create([
+             "log_name" => "Order",
+             "description" => "Order status updated",
+             "subject_type" => Order::class,
+             "subject_id" => $order->id,
+             "event" => "updated",
+             "causer_type" => User::class,
+             "causer_id" => auth()->user()->id,
+             "properties" => $order
+          ]);
+        };
         return back()->with('success', 'Order status updated successfully');
     }
 
     public function orderInvoice($orderId)
     {   
-        $order = Order::with('user', 'products')->where('order_id', $orderId)->firstOrFail();
-        $order->load(['user', 'products']);
+        $order = Order::with('user', 'products', 'paymentLogs')->where('order_id', $orderId)->firstOrFail();
+        $order->load(['user', 'products', 'paymentLogs']);
 
         $pdf = Pdf::loadView('invoices.order', [
             'order' => $order,
         ]);
-
+        Activity::create([
+            "log_name" => "Order",
+            "description" => "Order invoice generated",
+            "subject_type" => Order::class,
+            "event" => "created",
+            "subject_id" => $order->id,
+            "causer_type" => User::class,
+            "causer_id" => auth()->user()->id,
+            "properties" => $order
+        ]);
         return $pdf->stream("invoice-order-{$order->order_id}.pdf");
     }
 
 
     public function orderDestroy(Order $order)
     {
+        
         $order->delete();
 
         return redirect('/admin/orders')->with('success', 'Order deleted successfully');
@@ -454,7 +592,7 @@ class AdminController extends Controller
 
         foreach ($orders as $order) {
             $order->update(['total' => $order->products->sum(function ($product) {
-                return $product->pivot->amount * $product->pivot->price;
+                return $product->pivot->amount * $product->pivot->price ;
             })]);
         }
 
@@ -526,6 +664,18 @@ class AdminController extends Controller
         ]);
 
         $customer->update($validated);
+        if($customer->wasChanged()) {
+            Activity::create([
+                "log_name" => "Customer",
+                "description" => "Customer status updated",
+                "subject_type" => User::class,
+                "event" => "updated",
+                "subject_id" => $customer->id,
+                "causer_type" => User::class,
+                "causer_id" => auth()->user()->id,
+                "properties" => $customer
+            ]);
+        }
         return back()->with('success', 'Customer status updated successfully');
     
     }
@@ -539,39 +689,55 @@ class AdminController extends Controller
         );
     }
 
-    public function settingsUpdate()
-    {
-        $validated = request()->validate([
-            'site_name' => 'required|string',
-            'site_description' => 'nullable|string',
-            'discord_link' => 'nullable|url',
-            'maintenance_mode' => 'required',
-            'Meta_title' => 'nullable|string',
-            'Meta_description' => 'nullable|string',
-            'default_currency' => 'required|string',
-            'tax_rate' => 'required|numeric',
-            'developer_badge' => 'required',
-            'email_notifications' => 'required',
-        ]);
+public function settingsUpdate()
+{
+    $validated = request()->validate([
+        'site_name' => 'required|string',
+        'site_description' => 'nullable|string',
+        'discord_link' => 'nullable|url',
+        'maintenance_mode' => 'required',
+        'Meta_title' => 'nullable|string',
+        'Meta_description' => 'nullable|string',
+        'default_currency' => 'required|string',
+        'tax_rate' => 'required|numeric',
+        'developer_badge' => 'required',
+        'email_notifications' => 'required',
+    ]);
 
-        // Convert boolean-like values to '1' or '0' for storage
-        $booleanFields = ['maintenance_mode', 'developer_badge', 'email_notifications'];
-        foreach ($booleanFields as $field) {
-            if (isset($validated[$field])) {
-                $validated[$field] = ($validated[$field] === '1' || $validated[$field] === true || $validated[$field] === 1) ? '1' : '0';
-            }
+    // Convert boolean-like values to '1' or '0'
+    $booleanFields = ['maintenance_mode', 'developer_badge', 'email_notifications'];
+    foreach ($booleanFields as $field) {
+        if (isset($validated[$field])) {
+            $validated[$field] = ($validated[$field] == '1') ? '1' : '0';
         }
-
-        // Update or create settings
-        foreach ($validated as $key => $value) {
-            Setting::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value]
-            );
-        }
-
-        return back()->with('success', 'Settings updated successfully');
     }
+
+    $changesMade = false;
+
+    foreach ($validated as $key => $value) {
+        $setting = Setting::updateOrCreate(
+            ['key' => $key],
+            ['value' => $value]
+        );
+
+        if ($setting->wasChanged()) {
+            $changesMade = true;
+        }
+    }
+
+    if ($changesMade) {
+        Activity::create([
+            "log_name" => "Settings",
+            "description" => "Settings updated",
+            "causer_type" => User::class,
+            "causer_id" => auth()->user()->id,
+            "event" => "updated",
+            "properties" => $validated
+        ]);
+    }
+
+    return back()->with('success', 'Settings updated successfully');
+}
 
     public function CustomerMailSend($userId){
         $user = User::where('id', $userId)->get('email')->first();
@@ -586,8 +752,50 @@ class AdminController extends Controller
         $subject = $validated['subject'];
         $body = $validated['message'];
 
-        Mail::to($user)->send(new CustomerMail($customer, $subject, $body , $discord, $name));
+
+        try {
+            Mail::to($user)->send(new CustomerMail($customer, $subject, $body , $discord, $name));
+            Activity::create([
+               "log_name" => "Customer",
+               "description" => "Customer email sent successfully",
+               "subject_type" => User::class,
+               "subject_id" => $customer->id,
+               "causer_type" => User::class,
+               "event" => "mail_sent",
+               "causer_id" => auth()->user()->id,
+               "properties" => $validated
+            ]);
+        } catch (\Throwable $th) {
+            Activity::create([
+                "log_name" => "Customer",
+                "description" => "Customer email sent failed",
+                "subject_type" => User::class,
+                "subject_id" => $customer->id,
+                "event" => "mail_sent",
+                "causer_type" => User::class,
+                "causer_id" => auth()->user()->id,
+                "properties" => $validated. "Error: " . $th->getMessage()
+            ]);
+        }
+        
         return back()->with('success', 'Emails sent successfully');
+    }
+
+    public function Logs()
+    {
+        $logs = Activity::orderBy('created_at', 'desc')->get();
+        $users = User::where('role', 'admin')->get();
+        return Inertia::render('Admin/AdminLogs', [
+            'logs' => $logs
+            , 'users' => $users
+        ]);
+    }
+    public function LogShow($id)
+    {
+        $log = Activity::where('id', $id)->first();
+        return Inertia::render('Admin/AdminLogDetail', [
+            'log' => $log
+        ]);
     }
 }
 

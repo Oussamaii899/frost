@@ -1,4 +1,3 @@
-"use client"
 
 import type React from "react"
 
@@ -8,6 +7,7 @@ import { ShoppingCart, ArrowLeft, Edit, ChevronDown, ChevronUp, Download } from 
 import { useState } from "react"
 import { AdminHeader } from "./AdminHeader"
 import { AdminLayout } from "@/layouts/AdminLayout"
+import { Badge } from "@/components/ui/badge"
 import { router } from "@inertiajs/react"
 
 export default function AdminOrderDetail({ order }: { order: any }) {
@@ -50,10 +50,25 @@ export default function AdminOrderDetail({ order }: { order: any }) {
   const displayedItems = showMoreItems ? aggregatedItems : aggregatedItems.slice(0, 5)
   const hasMoreItems = aggregatedItems.length > 5
 
-
   const handleInvoice = () => {
     router.get(route("admin.orders.invoice", order.id))
   }
+
+  const paymentDetails = order.payment_logs || {}
+
+  const parseJSON = (jsonString: string) => {
+    try {
+      return typeof jsonString === "string" ? JSON.parse(jsonString) : jsonString
+    } catch (e) {
+      return {}
+    }
+  }
+
+  const paymentSource = parseJSON(paymentDetails.payment_source)?.paypal || {}
+  const purchaseUnits = parseJSON(paymentDetails.purchase_units)?.[0] || {}
+  const payer = parseJSON(paymentDetails.payer) || {}
+  const shipping = purchaseUnits.shipping || {}
+  const capture = purchaseUnits.payments?.captures?.[0] || {}
 
   return (
     <AdminLayout currentPath={`/admin/orders/${order.order_id}`}>
@@ -72,10 +87,10 @@ export default function AdminOrderDetail({ order }: { order: any }) {
               <p className="text-sm text-gray-400 mt-1">View and manage order details</p>
             </div>
           </div>
-          <a href={route("admin.orders.invoice", order.order_id)} target="_blank" > 
+          <a href={route("admin.orders.invoice", order.order_id)} target="_blank" rel="noreferrer">
             <Button className="gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white ">
-            <Download className="w-4 h-4" />
-            <span>Invoice</span>
+              <Download className="w-4 h-4" />
+              <span>Invoice</span>
             </Button>
           </a>
         </div>
@@ -183,6 +198,120 @@ export default function AdminOrderDetail({ order }: { order: any }) {
                 </div>
               </CardContent>
             </Card>
+            {order.status === "Completed" && (
+              <Card
+                className="bg-slate-800/50 border-slate-700 animate-slide-in-left"
+                style={{ animationDelay: "0.2s" }}
+              >
+                <CardHeader>
+                  <CardTitle className="text-white">Payment Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">Payment Status</p>
+                      <Badge className="mt-2 bg-green-500/20 text-green-500 border-green-500/30 capitalize">
+                        {capture.status || "Completed"}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Payment ID</p>
+                      <p className="text-white text-sm font-mono mt-2 break-all">{paymentDetails.payment_id}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">Capture ID</p>
+                      <p className="text-white text-sm font-mono mt-2 break-all">{capture.id || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Payment Method</p>
+                      <p className="text-white text-sm mt-2 capitalize">
+                        {paymentSource.email_address ? "PayPal" : "Card"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {payer.name && (
+                    <>
+                      <div className="border-t border-slate-700 pt-4">
+                        <p className="text-gray-400 text-sm mb-3">Payer Information</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <p className="text-gray-400 text-sm">Name</p>
+                            <p className="text-white text-sm">
+                              {payer.name?.given_name} {payer.name?.surname}
+                            </p>
+                          </div>
+                          <div className="flex max-md:flex-col justify-between">
+                            <p className="text-gray-400 text-sm">Email</p>
+                            <p className="text-white text-sm">{payer.email_address}</p>
+                          </div>
+                          <div className="flex justify-between">
+                            <p className="text-gray-400 text-sm">Country</p>
+                            <p className="text-white text-sm">{payer.address?.country_code}</p>
+                          </div>
+                          {payer.phone?.phone_number && (
+                            <div className="flex justify-between">
+                              <p className="text-gray-400 text-sm">Phone</p>
+                              <p className="text-white text-sm">{payer.phone.phone_number.national_number}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {shipping.address && (
+                    <>
+                      <div className="border-t border-slate-700 pt-4">
+                        <p className="text-gray-400 text-sm mb-3">Shipping Address</p>
+                        <div className="space-y-2">
+                          <p className="text-white text-sm">{shipping.name?.full_name}</p>
+                          <p className="text-white text-sm">{shipping.address?.address_line_1}</p>
+                          {shipping.address?.address_line_2 && (
+                            <p className="text-white text-sm">{shipping.address.address_line_2}</p>
+                          )}
+                          <p className="text-white text-sm">
+                            {shipping.address?.admin_area_2}, {shipping.address?.postal_code}
+                          </p>
+                          <p className="text-white text-sm">{shipping.address?.country_code}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="border-t border-slate-700 pt-4">
+                    <p className="text-gray-400 text-sm mb-3">Transaction Info</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <p className="text-gray-400 text-sm">Created</p>
+                        <p className="text-white text-sm">{new Date(paymentDetails.created_at).toLocaleString()}</p>
+                      </div>
+                      <div className="flex justify-between">
+                        <p className="text-gray-400 text-sm">Updated</p>
+                        <p className="text-white text-sm">{new Date(paymentDetails.updated_at).toLocaleString()}</p>
+                      </div>
+                      {capture.amount && (
+                        <div className="flex justify-between">
+                          <p className="text-gray-400 text-sm">Amount</p>
+                          <p className="text-white text-sm">
+                            {capture.amount.currency_code} {capture.amount.value}
+                          </p>
+                        </div>
+                      )}
+                      {capture.create_time && (
+                        <div className="flex justify-between">
+                          <p className="text-gray-400 text-sm">Capture Time</p>
+                          <p className="text-white text-sm">{new Date(capture.create_time).toLocaleString()}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Right Column - Payment Information */}
@@ -193,21 +322,6 @@ export default function AdminOrderDetail({ order }: { order: any }) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
-                  <div className="pb-4 border-b border-slate-700">
-                    <p className="text-sm text-gray-400 mb-2">Subtotal</p>
-                    <p className="text-lg font-semibold text-white">${(order.total * 0.9).toFixed(2)}</p>
-                  </div>
-
-                  <div className="pb-4 border-b border-slate-700">
-                    <p className="text-sm text-gray-400 mb-2">Shipping</p>
-                    <p className="text-lg font-semibold text-white">$10.00</p>
-                  </div>
-
-                  <div className="pb-4 border-b border-slate-700">
-                    <p className="text-sm text-gray-400 mb-2">Tax</p>
-                    <p className="text-lg font-semibold text-white">${(order.total * 0.1).toFixed(2)}</p>
-                  </div>
-
                   <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-lg p-4">
                     <p className="text-sm text-gray-400 mb-2">Total</p>
                     <p className="text-2xl font-bold text-cyan-400">${order.total}</p>
@@ -215,13 +329,15 @@ export default function AdminOrderDetail({ order }: { order: any }) {
 
                   <div className="pt-4 space-y-3">
                     <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Payment Method</p>
-                      <p className="text-white font-medium">Credit Card</p>
-                    </div>
-                    <div>
                       <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Payment Status</p>
-                      <span className="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full">
-                        Paid
+                      <span
+                        className={
+                          paymentDetails.status && order.is_paid
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-red-500/20 text-red-400 " + "inline-block px-3 py-1  text-sm rounded-full"
+                        }
+                      >
+                        {paymentDetails.status && order.is_paid ? "Paid" : "Unpaid"}
                       </span>
                     </div>
                   </div>

@@ -30,6 +30,7 @@ import {
   Camera,
   Server,
   LucideIcon,
+  ShoppingCart,
 } from "lucide-react"
 import { getIcon } from "./Admin/icon-map"
 import CookieConsent from "@/components/CookieConsent"
@@ -76,15 +77,58 @@ interface Categories {
   icon: string | LucideIcon
 }
 
+  const CartIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="w-5 h-5"
+  >
+    <circle cx="9" cy="20" r="1.5" />
+    <circle cx="18" cy="20" r="1.5" />
+    <path d="M3 4h2l2.4 10.2a1 1 0 0 0 .98.8H18a1 1 0 0 0 .97-.76L21 8H8" />
+  </svg>
+)
+
+
 export default function FrostMarket({Categories, Products, Settings, user}: {Categories?: Categories[], Products?: any, Settings?: any, user?: any}) {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState("")
+  const [selectedProductslug, setSelectedProductslug] = useState("")
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [showContent, setShowContent] = useState(false)
   const [showDeveloperModal, setShowDeveloperModal] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+
+  let cart = [];
+
+
+    function addToCart(slug) {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+      // prevent duplicates (optional)
+      if (!cart.includes(slug)) {
+          cart.push(slug);
+      }
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      console.log("Added to cart:", slug);
+  }
+
+
+  if (!localStorage.getItem("cart")) {
+    localStorage.setItem("cart", JSON.stringify([]));
+  }
+
+
+
 
     const [settings, setSettings] = useState(
     Settings.reduce((acc: any, setting: any) => {
@@ -132,8 +176,9 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
   }, [isDarkMode])
 
 
-  const handlePurchase = (productName: string) => {
+  const handlePurchase = (productName: string, productSlug: string) => {
     setSelectedProduct(productName)
+    setSelectedProductslug(productSlug)
     setShowPurchaseModal(true)
   }
  /* 
@@ -326,6 +371,9 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
   }
 
  */
+
+
+  let cartItems = JSON.parse(localStorage.getItem("cart")) || [];
   const getBadgeColor = (badge: string) => {
     switch (badge) {
       case "Most Popular":
@@ -419,11 +467,11 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
                 ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:shadow-cyan-500/25"
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             }`}
-            onClick={() => product.stock > 0 && handlePurchase(product.name)}
+            onClick={() => product.stock > 0 && handlePurchase(product.name, product.slug)}
             disabled={product.stock <= 0}
           >
             <span className="relative z-10 flex items-center justify-center">
-              {product.stock > 0 ? "Purchase Now" : "Out of Stock"}
+              {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
               {product.stock > 0 && (
                 <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
               )}
@@ -546,12 +594,28 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
 
             <div className="flex items-center space-x-4">
               {user ? (
-                <a href="/admin">
-                  <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-6 hidden sm:flex hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 relative group overflow-hidden">
-                    <span className="relative z-10">Dashboard</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </Button>
-                </a>
+                <div className="flex items-center space-x-4">
+                  <a href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}>
+                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-6 hidden sm:flex hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 relative group overflow-hidden">
+                      <span className="relative z-10">{user.role === "admin" ? "Admin" : "Dashboard"}</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </Button>
+                  </a>
+                  <a href="/cart">
+                    {
+                      cartItems.length > 0 ? (
+                        <div className="relative">
+                          <span className="absolute -top-2 -right-2 flex items-center  justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-cyan-500 rounded-full">
+                            {cartItems.length}
+                          </span>
+                          <ShoppingCart className="w-6 h-6 text-white transition-all duration-300" />
+                        </div>
+                      ) : (
+                        <ShoppingCart className="w-6 h-6 text-white transition-all duration-300" />
+                      )
+                    }
+                  </a>
+                </div>
               ) : (
                 <a href="/login">
                   <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-6 hidden sm:flex hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 relative group overflow-hidden">
@@ -605,9 +669,9 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
                   Contact
                 </button>
                 {user ? (
-                  <a href="/admin">
+                  <a href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}>
                     <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center font-semibold w-full justify-center">
-                      Dashboard
+                      {user.role === "admin" ? "Admin Dashboard" : "Dashboard"}
                     </Button>
                   </a>
                 ) : (
@@ -1242,7 +1306,7 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
             >
               To complete your purchase of{" "}
               <span className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{selectedProduct}</span>,
-              please join our Discord server.
+              please follow the steps below:
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
@@ -1256,10 +1320,10 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
               </h4>
               <ol className={`list-decimal list-inside space-y-3 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                 {[
-                  "Join our Discord server using the button below",
-                  "Navigate to the #purchase-tickets channel",
-                  "Create a ticket with your order details",
-                  "Our team will assist you with payment and delivery",
+                  "Click the \"add to cart\" button",
+                  "Review your cart and proceed to checkout",
+                  "Complete the payment process",
+                  "Once the payment is confirmed, your order will be processed and shipped to you",
                 ].map((step, index) => (
                   <li key={index} className="animate-slide-in-left" style={{ animationDelay: `${0.3 + index * 0.1}s` }}>
                     {step}
@@ -1272,11 +1336,13 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
                 className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white flex items-center gap-2 py-3 group hover:scale-105 transition-all duration-300"
                 onClick={() => {
                   // In a real app, this would open Discord invite
-                  window.open(settings.discord_link, "_blank")
+                  addToCart(selectedProductslug); 
+                  window.open('/cart', "_blank");
                 }}
+                /* window.open(settings.discord_link, "_blank") */
               >
                 <ExternalLink className="w-4 h-4" />
-                Join Discord Server
+                Add to cart
                 <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
               <Button

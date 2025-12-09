@@ -71,6 +71,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
                     required
                   >
+                    <option value="-1" selected>Select a category</option>
                     {categories && categories.map((category: any) => (
                       <option key={category.id} value={category.id}>{category.name}</option>
                     ))}

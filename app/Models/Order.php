@@ -17,6 +17,9 @@ class Order extends Model
         'total',
         'status',
         'user_id',
+        'paypal_order_id',
+        'is_stock_restored',
+        'is_paid',
     ];
 
     
@@ -28,4 +31,16 @@ class Order extends Model
     {
         return $this->belongsToMany(Product::class)->withPivot('amount', 'price');
     }
+
+    public function paymentLogs()
+    {
+        return $this->hasOne(PaymentLog::class);
+    }
+
+    public function stock()
+    {
+        return $this->hasMany(Stock::class);
+    }
+
+    
 }

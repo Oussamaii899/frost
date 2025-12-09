@@ -17,7 +17,6 @@ class CustomerMail extends Mailable
     public $body;
     public $discord;
     public $name;
-
     public function __construct($customer, $subject, $body, $discord, $name)
     {
         $this->customer = $customer;

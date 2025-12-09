@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Settings, LogOut, X } from "lucide-react"
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Settings, LogOut, X, Logs } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 
@@ -21,6 +21,7 @@ export function AdminSidebar({ currentPath, isMobile = false, onClose, nOrders =
   { icon: FolderTree, label: "Categories", href: "/admin/categories" },
   { icon: ShoppingCart, label: "Orders", href: "/admin/orders", notificationCount: nOrders ?? 0 },
   { icon: Users, label: "Customers", href: "/admin/customers" },
+  { icon: Logs, label: "Logs", href: "/admin/logs" },
   { icon: Settings, label: "Settings", href: "/admin/settings"},
 ]
 
@@ -65,11 +66,11 @@ export function AdminSidebar({ currentPath, isMobile = false, onClose, nOrders =
             >
               <item.icon className={cn("w-5 h-5", isActive && "animate-pulse-slow")} />
               <span className="font-medium flex-1">{item.label}</span>
-              {item.notificationCount && item.notificationCount > 0 && (
+              {item.notificationCount && item.notificationCount > 0 ? (
                 <span className="bg-cyan-500 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">
                   {item.notificationCount > 99 ? "99+" : item.notificationCount}
                 </span>
-              )}
+              ): (null)}
             </a>
           )
         })}

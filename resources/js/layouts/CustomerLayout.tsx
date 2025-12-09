@@ -13,7 +13,6 @@ interface CustomerLayoutProps {
 
 
 export default function CustomerLayout({ children, currentPage }: CustomerLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [nOrders, setNOrders] = useState(0)
   const [nSupport, setNSupport] = useState(0)
   
@@ -37,11 +36,12 @@ export default function CustomerLayout({ children, currentPage }: CustomerLayout
     return () => clearInterval(interval)
   }, [])
 
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float-slow"></div>
@@ -49,31 +49,59 @@ export default function CustomerLayout({ children, currentPage }: CustomerLayout
         <div className="absolute top-1/2 left-3/4 w-48 h-48 bg-frost-purple/5 rounded-full blur-3xl animate-float"></div>
       </div>
 
-      <CustomerSidebar
-        currentPath={currentPage}
-        isMobile={true}
-        nOrders={nOrders}
-        nSupport={nSupport}
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      {/* DESKTOP SIDEBAR — always visible */}
+      <div className="hidden md:flex fixed left-0 top-0 h-screen z-30">
+        <CustomerSidebar
+          currentPath={currentPage}
+          isMobile={false}
+          nOrders={nOrders}
+          nSupport={nSupport}
+          isOpen={true}
+        />
+      </div>
 
-      <div className="flex-1 flex flex-col">
-        {/* Mobile header with hamburger menu */}
-        <div className="md:hidden bg-slate-800/50 border-b border-slate-700 px-4 py-3 flex items-center backdrop-blur-md">
+      {/* MOBILE OVERLAY */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 md:hidden z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* MOBILE SIDEBAR */}
+      <div
+        className={`fixed md:hidden top-0 left-0 h-screen z-50 transform transition-transform duration-300 
+         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <CustomerSidebar
+          currentPath={currentPage}
+          isMobile={true}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          nOrders={nOrders}
+          nSupport={nSupport}
+        />
+      </div>
+
+      {/* Main content */}
+      <main className="md:ml-64 flex flex-col min-h-screen relative z-10">
+        {/* Mobile header with toggle button */}
+        <div className="md:hidden bg-slate-800/50 border-b border-slate-700 p-4 flex items-center gap-4 sticky top-0 z-20">
           <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
             aria-label="Toggle sidebar"
           >
-            <Menu className="w-6 h-6 text-gray-400" />
+            <Menu className="w-6 h-6" />
           </button>
-          <div className="ml-3 text-sm font-medium text-gray-300">Customer Portal</div>
+          <div className="flex items-center justify-center">
+            <img src="/frost-logo.png" alt="Frost Admin Logo" width={72} height={72} className="rounded-lg" />
+          </div>
         </div>
 
-        {/* Content area */}
-        <div className="flex-1 overflow-auto">{children}</div>
-      </div>
+        {/* Content */}
+        <div className="flex-1 overflow-x-auto">{children}</div>
+      </main>
     </div>
   )
 }

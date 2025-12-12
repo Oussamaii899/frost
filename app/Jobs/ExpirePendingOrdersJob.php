@@ -25,7 +25,7 @@ class ExpirePendingOrdersJob implements ShouldQueue
     public function handle(): void
     {
         Order::where('status', 'Pending')->
-        where('created_at', '<=', now()->subMinutes(1))
+        where('created_at', '<=', now()->subMinutes(30))
         ->update(['status' => 'Cancelled']);
     }
 }

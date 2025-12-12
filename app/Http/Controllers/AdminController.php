@@ -667,7 +667,7 @@ class AdminController extends Controller
         if($customer->wasChanged()) {
             Activity::create([
                 "log_name" => "Customer",
-                "description" => "Customer status updated",
+                "description" => "Customer status(" . $customer->status . ") updated",
                 "subject_type" => User::class,
                 "event" => "updated",
                 "subject_id" => $customer->id,

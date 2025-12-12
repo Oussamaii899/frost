@@ -72,6 +72,7 @@ class CustomerController extends Controller
         $order = Order::with('products', 'user', 'paymentLogs')->where('order_id', $orderId)->firstOrFail();
         return Inertia::render('Customer/CustomerOrderDetail', [
             'order' => $order->load('products', 'user', 'paymentLogs'),
+            'paypalClientId' => config('services.paypal.client_id'),
         ]);
     }
 
@@ -138,7 +139,8 @@ class CustomerController extends Controller
 
         $products = Product::with('category')->get();
         return Inertia::render('Customer/CustomerCart', [
-            'products' => $products
+            'products' => $products,
+            'paypalClientId' => config('services.paypal.client_id'),
         ]);
     }
 

@@ -73,11 +73,13 @@ Route::middleware(['auth', 'verified', Maintenance::class])->group(function () {
         ]);
     })->name('order.success');
 
-    Route::post('/checkout', [CheckoutController::class, 'createOrder'])->middleware('throttle:checkout');
-    Route::post('/paypal/create', [CheckoutController::class, 'createPayPalOrder'])->middleware('throttle:paypal-create');
-    Route::post('/paypal/capture', [CheckoutController::class, 'capturePayPal'])->middleware('throttle:paypal-capture');
-    Route::post('/order/cancel', [CheckoutController::class, 'cancelOrder'])->middleware('throttle:order-cancel');
+
 });
+
+    Route::post('/checkout', [CheckoutController::class, 'createOrder'])->middleware('throttle:checkout');
+    Route::post('/paypal/create', [CheckoutController::class, 'createPayPalOrder'])/* ->middleware('throttle:paypal-create') */;
+    Route::post('/paypal/capture', [CheckoutController::class, 'capturePayPal'])/* ->middleware('throttle:paypal-capture') */;
+    Route::post('/order/cancel', [CheckoutController::class, 'cancelOrder'])->middleware('throttle:order-cancel');
 
 Route::middleware(['auth', 'verified', Admin::class])->group(function () {
 
@@ -98,8 +100,8 @@ Route::middleware(['auth', 'verified', Admin::class])->group(function () {
     Route::put('/admin/products/{product}', [AdminController::class, 'productUpdate'])->name('admin.products.update');
     Route::delete('/admin/products/{product}', [AdminController::class, 'productDestroy'])->name('admin.products.destroy');
     
-    Route::post('/admin/products/{product}/stock', [AdminController::class, 'StockAdd'])->name('stock.add')->middleware('throttle:stock-change');
-    Route::delete('/admin/products/{product}/stock/remove', [AdminController::class, 'StockDelete'])->name('stock.delete')->middleware('throttle:stock-change');
+    Route::post('/admin/products/{product}/stock', [AdminController::class, 'StockAdd'])->name('stock.add');
+    Route::delete('/admin/products/{product}/stock/remove', [AdminController::class, 'StockDelete'])->name('stock.remove');
 
 
     // Categories - CRUD with view

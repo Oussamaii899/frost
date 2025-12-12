@@ -17,7 +17,7 @@ interface CartItem {
   slug: string
 }
 
-export default function CartPage({ products }: { products?: any }) {
+export default function CartPage({ products, paypalClientId }: { products?: any; paypalClientId?: string }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [Total, setTotal] = useState(0)
@@ -74,7 +74,7 @@ export default function CartPage({ products }: { products?: any }) {
     }
   }
 
-  const paypalLoaded = usePayPalScript("AbdQZ6taSn-9G1daVMouYz9k_98y0UTX1R3N_hLSNs4nGtQB3Ps9wVZoJdGHeC2-qTJWFcCAnyTQ5exY")
+  const paypalLoaded = usePayPalScript(paypalClientId || "")
   const [orderId, setOrderId] = useState<string | null>(null)
   const [isPaymentReady, setIsPaymentReady] = useState(false)
 
@@ -93,8 +93,14 @@ export default function CartPage({ products }: { products?: any }) {
             },
             body: JSON.stringify({ order_id: orderId }),
           })
-            .then((res) => res.json())
-            .then((data) => data.id)
+            .then(async (res) => {
+              const data = await res.json().catch(() => ({}))
+              if (!res.ok || !data.id) {
+                const msg = data.error || "Unable to create PayPal order"
+                throw new Error(msg)
+              }
+              return data.id
+            })
         },
 
         onApprove: (data: any) => {
@@ -106,7 +112,14 @@ export default function CartPage({ products }: { products?: any }) {
             },
             body: JSON.stringify({ paypal_order_id: data.orderID }),
           })
-            .then((res) => res.json())
+            .then(async (res) => {
+              const data = await res.json().catch(() => ({}))
+              if (!res.ok) {
+                const msg = (data && data.error) || "Unable to capture PayPal order"
+                throw new Error(msg)
+              }
+              return data
+            })
             .then((res) => {
               localStorage.removeItem("cart")
               router.get(route("order.success", res.storedData))
@@ -128,6 +141,10 @@ export default function CartPage({ products }: { products?: any }) {
   }, [orderId, paypalLoaded, isPaymentReady])
 
   async function proceedToCheckout() {
+    if (!paypalClientId) {
+      toast.error("PayPal is not configured. Please try again later.")
+      return
+    }
     try {
       const cartPayload = cartItems.map((item) => ({
         slug: item.slug,

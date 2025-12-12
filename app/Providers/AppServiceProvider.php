@@ -20,8 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        config([
-           'app.description' => Setting::where('key', 'site_description')->first()?->value,
-        ]); 
+        try {
+            $description = Setting::where('key', 'site_description')->value('value');
+            config(['app.description' => $description]);
+        } catch (\Throwable $e) {
+            // Avoid breaking artisan commands when DB is unavailable
+        }
     }
 }

@@ -11,7 +11,7 @@ import { usePayPalScript } from "@/hooks/usePayPalScript"
 import { Toaster, toast } from "sonner"
 import { router } from "@inertiajs/react"
 
-export default function CustomerOrderDetail({ order }: { order?: any }) {
+export default function CustomerOrderDetail({ order, paypalClientId }: { order?: any; paypalClientId?: string }) {
   const [showAllItems, setShowAllItems] = useState(false)
   const [showPaymentView, setShowPaymentView] = useState(false)
   const [isPaymentReady, setIsPaymentReady] = useState(false)
@@ -22,9 +22,7 @@ export default function CustomerOrderDetail({ order }: { order?: any }) {
   const itemsToDisplay = showAllItems ? order.products : order.products.slice(0, 5)
   const hasMoreItems = order.products.length > 5
 
-  const paypalLoaded = usePayPalScript(
-    "AbdQZ6taSn-9G1daVMouYz9k_98y0UTX1R3N_hLSNs4nGtQB3Ps9wVZoJdGHeC2-qTJWFcCAnyTQ5exY",
-  )
+  const paypalLoaded = usePayPalScript(paypalClientId || "")
 
   useEffect(() => {
     if (!paypalLoaded || !showPaymentView || !isPaymentReady) return
@@ -41,8 +39,14 @@ export default function CustomerOrderDetail({ order }: { order?: any }) {
             },
             body: JSON.stringify({ order_id: order.order_id }),
           })
-            .then((res) => res.json())
-            .then((data) => data.id)
+            .then(async (res) => {
+              const data = await res.json().catch(() => ({}))
+              if (!res.ok || !data.id) {
+                const msg = data.error || "Unable to create PayPal order"
+                throw new Error(msg)
+              }
+              return data.id
+            })
         },
 
         onApprove: (data: any) => {
@@ -54,7 +58,14 @@ export default function CustomerOrderDetail({ order }: { order?: any }) {
             },
             body: JSON.stringify({ paypal_order_id: data.orderID }),
           })
-            .then((res) => res.json())
+            .then(async (res) => {
+              const data = await res.json().catch(() => ({}))
+              if (!res.ok) {
+                const msg = (data && data.error) || "Unable to capture PayPal order"
+                throw new Error(msg)
+              }
+              return data
+            })
             .then(() => {
               toast.success("Payment successful!")
               setShowPaymentView(false)
@@ -78,6 +89,10 @@ export default function CustomerOrderDetail({ order }: { order?: any }) {
   }, [paypalLoaded, showPaymentView, isPaymentReady, order.order_id])
 
   const handleContinuePayment = () => {
+    if (!paypalClientId) {
+      toast.error("PayPal is not configured. Please try again later.")
+      return
+    }
     setShowPaymentView(true)
     setIsPaymentReady(true)
   }

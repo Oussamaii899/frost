@@ -31,7 +31,7 @@ class RouteLimitServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->user()?->id ?? $request->ip())
                 ->response(function () {
                     return response()->json([
-                        "message" => "Too many PayPal requests. Please wait a moment."
+                        "message" => "Too many requests. Please wait a moment."
                     ], 429);
                 });
         });
@@ -41,7 +41,7 @@ class RouteLimitServiceProvider extends ServiceProvider
             return Limit::perMinute(3)->by($request->user()?->id ?? $request->ip())
                 ->response(function () {
                     return response()->json([
-                        "message" => "You are confirming payments too fast."
+                        "message" => "Too many requests. Please wait a moment."
                     ], 429);
                 });
         });

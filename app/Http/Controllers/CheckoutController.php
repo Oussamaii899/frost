@@ -153,7 +153,7 @@ class CheckoutController extends Controller
 
         Log::info($result);
 
-        if (($result['status'] ?? null) === 'COMPLETED') {
+        if (($result['status'] ?? null) === 'COMPLETED' && ($result['purchase_units'][0]['payments']['captures'][0]['status'] ?? null) === 'COMPLETED') {
             $order->status = 'Completed';
             $order->is_paid = 1;
             $order->save();
@@ -195,6 +195,42 @@ class CheckoutController extends Controller
 
             return response()->json([
                 'message' => 'Payment successful',
+                'order' => $order,
+                'storedData' => $storedData,
+            ]);
+
+        }
+        elseif (($result['status'] ?? null) === 'COMPLETED' && ($result['purchase_units'][0]['payments']['captures'][0]['status'] ?? null) === 'PENDING') {
+
+            $order->status = 'Processing';
+            $order->is_paid = 1;
+            $order->save();
+
+
+            DB::table('payment_logs')->insert([
+                'order_id' => $order->id,
+                'payment_id' => $result['id'],
+                'status' => 'Completed',
+                'payment_source' => json_encode($result['payment_source']),
+                'purchase_units' => json_encode($result['purchase_units']),
+                'payer' => json_encode($result['payer']),
+                'links' => json_encode($result['links']),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $storedData = [
+              'order_id'=>$order->order_id,
+              'payment_id'=>$result['id'],
+              'status'=>'Completed',
+              'payment_source'=>json_encode($result['payment_source']),
+              'purchase_units'=>json_encode($result['purchase_units']),
+              'payer'=>json_encode($result['payer']),
+              'links'=>json_encode($result['links']),  
+              'created_at'=>now(),
+              'updated_at'=>now(),
+            ];
+            return response()->json([
+                'message' => 'Payment Pending',
                 'order' => $order,
                 'storedData' => $storedData,
             ]);

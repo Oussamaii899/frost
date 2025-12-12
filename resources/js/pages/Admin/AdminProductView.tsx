@@ -36,7 +36,7 @@ export default function AdminProductView({ product }: { product: any }) {
     try {
       // Call backend StockAdd function
       console.log(stocks)
-      router.post(`/admin/products/${product.id}/stock/add`, { stocks })
+      router.post(`/admin/products/${product.id}/stock/`, { stocks })
       toast.success("Stock added successfully!")
       setIsAddStockOpen(false)
     } catch (error) {
@@ -47,7 +47,7 @@ export default function AdminProductView({ product }: { product: any }) {
   }
 
   const handleDeleteStock = (stockId: number) => {
-    router.delete(`/admin/products/${product.id}/stock/${stockId}`, {
+    router.delete(route('stock.remove', {product: product.id, stock: stockId}), {
       onSuccess: () => {
         toast.success("Stock deleted successfully!")
         setDeleteStockId(null)

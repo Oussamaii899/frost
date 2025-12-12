@@ -198,7 +198,7 @@ export default function AdminOrderDetail({ order }: { order: any }) {
                 </div>
               </CardContent>
             </Card>
-            {order.status === "Completed" && (
+            {order.status === "Completed" || order.is_paid && (
               <Card
                 className="bg-slate-800/50 border-slate-700 animate-slide-in-left"
                 style={{ animationDelay: "0.2s" }}
@@ -210,7 +210,7 @@ export default function AdminOrderDetail({ order }: { order: any }) {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-gray-400 text-sm">Payment Status</p>
-                      <Badge className="mt-2 bg-green-500/20 text-green-500 border-green-500/30 capitalize">
+                      <Badge className={"mt-2 capitalize"+ capture.status === "Completed" ? " bg-green-500/20 text-green-500 border-green-500/30" : " bg-red-500/20 text-red-400 border-red-500/30"}>
                         {capture.status || "Completed"}
                       </Badge>
                     </div>

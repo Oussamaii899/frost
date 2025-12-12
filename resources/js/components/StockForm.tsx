@@ -58,11 +58,11 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <div className="space-y-2">
-        <Label className="text-white">Stock Type *</Label>
+        <Label className="text-white text-sm">Stock Type *</Label>
         <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
+          <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700">
@@ -75,10 +75,10 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
         </Select>
       </div>
 
-      <div className="space-y-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700">
+      <div className="space-y-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700 w-full overflow-x-hidden">
         {currentTypeConfig.fields.map((field) => (
-          <div key={field.key} className="space-y-1">
-            <Label htmlFor={field.key} className="text-white text-sm">
+          <div key={field.key} className="space-y-1 w-full">
+            <Label htmlFor={field.key} className="text-white text-sm block truncate">
               {field.label}
             </Label>
             <Input
@@ -93,7 +93,7 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
               }
               placeholder={`Enter ${field.label.toLowerCase()}`}
               disabled={field.disabled}
-              className="bg-slate-900/50 border-slate-600 text-white placeholder:text-gray-500 disabled:opacity-50"
+              className="bg-slate-900/50 border-slate-600 text-white placeholder:text-gray-500 disabled:opacity-50 w-full text-sm"
             />
           </div>
         ))}
@@ -110,16 +110,18 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
       </Button>
 
       {stocks.length > 0 && (
-        <div className="space-y-2 pt-4 border-t border-slate-700">
+        <div className="space-y-2 pt-4 border-t border-slate-700 w-full">
           <p className="text-sm text-gray-400 font-medium">Stocks to Add ({stocks.length})</p>
-          <div className="space-y-2 max-h-40 overflow-y-auto">
+          <div className="space-y-2 max-h-40 overflow-y-auto w-full">
             {stocks.map((stock, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-2 bg-slate-900/50 border border-slate-700 rounded gap-2"
+                className="flex items-center justify-between p-2 bg-slate-900/50 border border-slate-700 rounded gap-2 w-full min-w-0"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-cyan-400">{STOCK_TYPES[stock.type as keyof typeof STOCK_TYPES]?.label}</p>
+                  <p className="text-sm text-cyan-400 truncate">
+                    {STOCK_TYPES[stock.type as keyof typeof STOCK_TYPES]?.label}
+                  </p>
                   <p className="text-xs text-gray-500 truncate">
                     {Object.entries(stock.data)
                       .map(([key, value]) => `${key}: ${value}`)
@@ -131,7 +133,7 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
                   onClick={() => handleRemoveStock(index)}
                   size="sm"
                   variant="ghost"
-                  className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
+                  className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0 flex-shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -141,11 +143,11 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
         </div>
       )}
 
-      <div className="flex gap-2 pt-4">
+      <div className="flex gap-2 pt-4 w-full">
         <Button
           type="submit"
           disabled={stocks.length === 0 || isLoading}
-          className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white disabled:opacity-50"
+          className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white disabled:opacity-50 text-sm"
         >
           {isLoading ? "Adding..." : `Add ${stocks.length} Stock${stocks.length !== 1 ? "s" : ""}`}
         </Button>

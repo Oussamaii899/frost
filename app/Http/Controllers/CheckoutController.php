@@ -18,20 +18,28 @@ use App\Models\Setting;
 class CheckoutController extends Controller
 {
     public function createOrder(Request $request)
-    {
-        $cart = $request->input('cart', []);
-    
-        if (empty($cart)) {
-            return response()->json(['error' => 'Cart is empty'], 400);
-        }
-    
-        try {
-            $order = DB::transaction(function () use ($cart) {
-                $total = 0;
-                $items = [];
+{
+    $request->validate([
+        'cart' => 'required|array|min:1',
+        'cart.*.slug' => 'required|string|distinct',
+        'cart.*.amount' => 'required|integer|min:1',
+    ]);
 
-                foreach ($cart as $item) {
-                    $amount = (int) ($item['amount'] ?? 0);
+    $cart = $request->input('cart');
+    $userId = auth()->id();
+
+    try {
+        $order = DB::transaction(function () use ($cart, $userId) {
+
+            // Optional but recommended: sort to reduce deadlocks when locking multiple products
+            $cart = collect($cart)->sortBy('slug')->values()->all();
+
+            $total = 0;
+            $items = [];
+            $reservedStockIdsByProduct = []; // [product_id => [stock_id, ...]]
+
+            foreach ($cart as $cartItem) {
+                $amount = (int) $cartItem['amount'];
 
                     if ($amount <= 0) {
                         throw new \InvalidArgumentException("Invalid quantity for item.");

@@ -250,7 +250,7 @@ class AdminController extends Controller
             'category_id' => 'required|exists:categories,id',
             'originalPrice' => 'required|numeric',
             'price' => 'required|numeric',
-            'stock' => 'required|integer',
+            'badge' => 'nullable|string',
             'description' => 'nullable|string',
         ]);
         $validated['slug'] = \Str::slug($validated['name']) . '-' . uniqid();
@@ -274,11 +274,24 @@ class AdminController extends Controller
 
     public function productShow($slug)
     {
-        $product = Product::with('category', 'stocks')->where('slug', $slug)->firstOrFail();
+        $product = Product::with('category', 'stocks')
+            ->where('slug', $slug)
+            ->firstOrFail();
+    
+        // Filter BEFORE sending to frontend
+        $product->setRelation(
+            'stocks',
+            $product->stocks->filter(fn ($s) =>
+                $s->is_taken == 0 &&
+                is_null($s->order_id) &&
+                is_null($s->user_id)
+            )->values()
+        );
+    
         return Inertia::render('Admin/AdminProductView', [
             'product' => $product,
         ]);
-    }   
+    }
 
 
     public function StockAdd(Product $product, Request $request)
@@ -322,7 +335,6 @@ class AdminController extends Controller
             'category_id' => 'required|exists:categories,id',
             'originalPrice' => 'required|numeric',
             'price' => 'required|numeric',
-            'stock' => 'required|integer',
             'badge' => 'nullable|string',
             'description' => 'nullable|string',
         ]);

@@ -5,10 +5,12 @@ import type React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
-import { Package } from "lucide-react"
+import { Badge, Package } from "lucide-react"
 import { AdminHeader } from "./AdminHeader"
 import { AdminLayout } from "@/layouts/AdminLayout"
 import { router } from "@inertiajs/react"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function AdminProductCreate({categories}: {categories?: any}) {
   const [formData, setFormData] = useState({
@@ -18,6 +20,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
     originalPrice: "",
     stock: "",
     description: "",
+    badge:"",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,7 +33,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
       stock: formData.stock,
       description: formData.description,
     })
-    setFormData({ name: "", category_id: "", price: "", originalPrice: "", stock: "", description: "" })
+    setFormData({ name: "", category_id: "", price: "", originalPrice: "", stock: "", description: "", badge:"" })
   }
 
   return (
@@ -91,15 +94,20 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm text-gray-400 mb-2">Stock</label>
-                    <input
-                      type="number"
-                      value={formData.stock}
-                      onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
-                      placeholder="Quantity"
-                      required
-                    />
+                      <Label htmlFor="badge" className="text-white">
+                          Badge Status
+                        </Label>
+                        <Select value={formData.badge} onValueChange={(value) => setFormData({ ...formData, badge: value })}>
+                          <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-slate-700">
+                            <SelectItem value="not_recommended">Not Recommended</SelectItem>
+                            <SelectItem value="recommended">Recommended</SelectItem>
+                            <SelectItem value="popular">Popular</SelectItem>
+                            <SelectItem value="new">New</SelectItem>
+                          </SelectContent>
+                        </Select>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Original Price</label>

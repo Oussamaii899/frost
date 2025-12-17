@@ -10,7 +10,7 @@
         <meta property="og:type" content="website">
         <meta property="og:url" content="https://frostm.store/">
         <meta property="og:image" content="https://frostm.store/frost.png">
-
+        <meta name="google-adsense-account" content="ca-pub-2325266448570359">
 
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ config('app.name') }}">

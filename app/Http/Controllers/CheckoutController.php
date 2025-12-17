@@ -2,61 +2,88 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderSuccess;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Stock;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-
 use Illuminate\Support\Facades\Mail;
-use App\Mail\OrderSuccess;
-
-use App\Models\Setting;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
+    /**
+     * IMPORTANT ASSUMPTION:
+     * - stock.order_id stores orders.id (INT primary key), NOT orders.order_id (the "FF-XXXX" string).
+     *   If your stock.order_id is actually meant to store the string order number, change:
+     *      Stock::where('order_id', $order->id)
+     *   to:
+     *      Stock::where('order_id', $order->order_id)
+     *
+     * ALSO:
+     * - Make sure your Stock model uses: protected $table = 'stock';
+     */
+
     public function createOrder(Request $request)
-{
-    $request->validate([
-        'cart' => 'required|array|min:1',
-        'cart.*.slug' => 'required|string|distinct',
-        'cart.*.amount' => 'required|integer|min:1',
-    ]);
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
 
-    $cart = $request->input('cart');
-    $userId = auth()->id();
+        $request->validate([
+            'cart' => 'required|array|min:1',
+            'cart.*.slug' => 'required|string|distinct',
+            'cart.*.amount' => 'required|integer|min:1',
+        ]);
 
-    try {
-        $order = DB::transaction(function () use ($cart, $userId) {
+        $cart = $request->input('cart', []);
+        $userId = auth()->id();
 
-            // Optional but recommended: sort to reduce deadlocks when locking multiple products
-            $cart = collect($cart)->sortBy('slug')->values()->all();
+        try {
+            $order = DB::transaction(function () use ($cart, $userId) {
 
-            $total = 0;
-            $items = [];
-            $reservedStockIdsByProduct = []; // [product_id => [stock_id, ...]]
+                // Sorting reduces deadlock chance when multiple products are locked
+                $cart = collect($cart)->sortBy('slug')->values()->all();
 
-            foreach ($cart as $cartItem) {
-                $amount = (int) $cartItem['amount'];
+                $total = 0;
+                $items = [];
+                $reservedStockIdsByProduct = []; // [product_id => [stock_id, ...]]
 
-                    if ($amount <= 0) {
-                        throw new \InvalidArgumentException("Invalid quantity for item.");
-                    }
+                foreach ($cart as $cartItem) {
+                    $slug = (string) $cartItem['slug'];
+                    $amount = (int) $cartItem['amount'];
 
-                    $product = Product::where('slug', $item['slug'])
+                    $product = Product::where('slug', $slug)
                         ->lockForUpdate()
                         ->first();
 
                     if (!$product) {
-                        throw new \InvalidArgumentException("Product not found: " . $item['slug']);
+                        throw new \InvalidArgumentException("Product not found: {$slug}");
                     }
 
-                    if ($product->stock < $amount) {
+                    // Reserve REAL stock rows (digital inventory units)
+                    $stocks = Stock::where('product_id', $product->id)
+                        ->where('is_taken', 0)
+                        ->whereNull('order_id') // optional safety so "taken" stock always has order_id
+                        ->orderBy('id')
+                        ->limit($amount)
+                        ->lockForUpdate()
+                        ->get();
+
+                    if ($stocks->count() !== $amount) {
                         throw new \InvalidArgumentException($product->name . " is out of stock");
                     }
 
+                    $reservedStockIdsByProduct[$product->id] = $stocks->pluck('id')->all();
+
+                    // Optional: keep Product.stock as cached available count
+                    if ((int) $product->stock < $amount) {
+                        // This prevents cached stock from going negative if it ever becomes inconsistent
+                        throw new \InvalidArgumentException($product->name . " is out of stock");
+                    }
                     $product->decrement('stock', $amount);
 
                     $items[] = [
@@ -65,32 +92,34 @@ class CheckoutController extends Controller
                         'price'      => $product->price,
                     ];
 
-                    $total += $product->price * $amount;
+                    $total += ($product->price * $amount);
                 }
 
                 if ($total <= 0) {
                     throw new \InvalidArgumentException("Invalid order total.");
                 }
 
-                if (count($items) !== count(array_unique(array_column($items, 'product_id')))) {
-                    throw new \InvalidArgumentException("Duplicate product in cart.");
-                }
-
-                if (count($items) !== count($cart)) {
-                    throw new \InvalidArgumentException("Invalid cart data.");
-                }
-                
                 $order = Order::create([
                     'order_id' => 'FF-' . strtoupper(Str::random(10)),
-                    'user_id'  => auth()->id(),
+                    'user_id'  => $userId,
                     'status'   => 'Pending',
                     'total'    => $total,
                 ]);
-                Log::info($order);
+
                 foreach ($items as $item) {
                     $order->products()->attach($item['product_id'], [
                         'amount' => $item['amount'],
                         'price'  => $item['price'],
+                    ]);
+                }
+
+                // Bind reserved stock rows to the order (and mark taken)
+                foreach ($reservedStockIdsByProduct as $productId => $stockIds) {
+                    Stock::whereIn('id', $stockIds)->update([
+                        'is_taken'   => 1,
+                        'order_id'   => $order->id,
+                        'user_id'    => $userId,
+                        'updated_at' => now(),
                     ]);
                 }
 
@@ -111,20 +140,36 @@ class CheckoutController extends Controller
 
     public function createPayPalOrder(Request $request, PayPalService $paypal)
     {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
         $request->validate([
             'order_id' => 'required|string',
         ]);
 
-        $order = Order::where('order_id', $request->order_id)->firstOrFail();
+        $order = Order::where('order_id', $request->order_id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
         if ($order->status !== 'Pending') {
             return response()->json(['error' => 'Invalid order state'], 400);
         }
 
+        // Move to processing while creating PayPal order (we revert on failure)
         $order->status = 'Processing';
         $order->save();
 
-        $ppOrder = $paypal->createOrder($order->total);
+        try {
+            $ppOrder = $paypal->createOrder($order->total);
+        } catch (\Throwable $e) {
+            Log::error($e);
+
+            $order->status = 'Pending';
+            $order->save();
+
+            return response()->json(['error' => 'Unable to create PayPal order'], 502);
+        }
 
         if (!isset($ppOrder['id'])) {
             $order->status = 'Pending';
@@ -139,160 +184,272 @@ class CheckoutController extends Controller
         return response()->json($ppOrder);
     }
 
-
     public function capturePayPal(Request $request, PayPalService $paypal)
     {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
 
         $request->validate([
             'paypal_order_id' => 'required|string',
         ]);
-        
-        
-        Log::info($request->all());
 
+        Log::info('capturePayPal request', $request->all());
 
         $paypalOrderId = $request->paypal_order_id;
 
         $order = Order::where('paypal_order_id', $paypalOrderId)
-            ->with('products')
+            ->where('user_id', auth()->id())
+            ->with(['products', 'stock', 'user'])
             ->firstOrFail();
 
-        $result = $paypal->captureOrder($paypalOrderId);
+        // Idempotency: if already finalized, just return current state
+        if ($order->status === 'Completed') {
+            return response()->json([
+                'message' => 'Order already completed',
+                'order'   => $order,
+            ]);
+        }
+        if ($order->status === 'Cancelled') {
+            return response()->json([
+                'error' => 'Order is cancelled',
+                'order' => $order,
+            ], 400);
+        }
 
-        Log::info($result);
+        try {
+            $result = $paypal->captureOrder($paypalOrderId);
+        } catch (\Throwable $e) {
+            Log::error($e);
 
-        if (($result['status'] ?? null) === 'COMPLETED' && ($result['purchase_units'][0]['payments']['captures'][0]['status'] ?? null) === 'COMPLETED') {
+            return response()->json([
+                'error' => 'Unable to capture PayPal order',
+            ], 502);
+        }
+
+        Log::info('capturePayPal result', is_array($result) ? $result : ['result' => $result]);
+
+        $ppTopStatus = $result['status'] ?? null;
+        $ppCaptureStatus = $result['purchase_units'][0]['payments']['captures'][0]['status'] ?? null;
+
+        // Prepare payment log payload (safe JSON encoding)
+        $paymentLog = [
+            'order_id'        => $order->id,
+            'payment_id'      => $result['id'] ?? null,
+            'payment_source'  => json_encode($result['payment_source'] ?? null),
+            'purchase_units'  => json_encode($result['purchase_units'] ?? null),
+            'payer'           => json_encode($result['payer'] ?? null),
+            'links'           => json_encode($result['links'] ?? null),
+            'created_at'      => now(),
+            'updated_at'      => now(),
+        ];
+
+        // SUCCESS: Completed + capture Completed
+        if ($ppTopStatus === 'COMPLETED' && $ppCaptureStatus === 'COMPLETED') {
             $order->status = 'Completed';
             $order->is_paid = 1;
             $order->save();
 
-
-            DB::table('payment_logs')->insert([
-                'order_id' => $order->id,
-                'payment_id' => $result['id'],
+            DB::table('payment_logs')->insert(array_merge($paymentLog, [
                 'status' => 'Completed',
-                'payment_source' => json_encode($result['payment_source']),
-                'purchase_units' => json_encode($result['purchase_units']),
-                'payer' => json_encode($result['payer']),
-                'links' => json_encode($result['links']),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            
+            ]));
+
+            // Ensure stocks are loaded for the email/template
+            $order->loadMissing(['stock', 'products', 'user']);
+
             try {
                 Mail::to($order->user->email)->send(new OrderSuccess($order));
-            } catch (\Exception $e) {
-                Log::info('error:'+ $e->getMessage());
+            } catch (\Throwable $e) {
+                Log::error('Mail error: ' . $e->getMessage());
             }
 
-/*             return response()->json([
-                'message' => 'Payment successful',
-                'order' => $order,
-            ]); */
-            $storedData = [
-              'order_id'=>$order->order_id,
-              'payment_id'=>$result['id'],
-              'status'=>'Completed',
-              'payment_source'=>json_encode($result['payment_source']),
-              'purchase_units'=>json_encode($result['purchase_units']),
-              'payer'=>json_encode($result['payer']),
-              'links'=>json_encode($result['links']),  
-              'created_at'=>now(),
-              'updated_at'=>now(),
-            ];
-
             return response()->json([
                 'message' => 'Payment successful',
-                'order' => $order,
-                'storedData' => $storedData,
+                'order'   => $order,
+                'storedData' => array_merge($paymentLog, [
+                    'order_id' => $order->order_id, // for debugging convenience
+                    'status'   => 'Completed',
+                ]),
             ]);
-
         }
-        elseif (($result['status'] ?? null) === 'COMPLETED' && ($result['purchase_units'][0]['payments']['captures'][0]['status'] ?? null) === 'PENDING') {
 
+        // PENDING: PayPal order completed but capture pending (don’t deliver yet)
+        if ($ppTopStatus === 'COMPLETED' && $ppCaptureStatus === 'PENDING') {
             $order->status = 'Processing';
-            $order->is_paid = 1;
+            // IMPORTANT: treat as NOT fully paid until completed
+            $order->is_paid = 0;
             $order->save();
 
+            DB::table('payment_logs')->insert(array_merge($paymentLog, [
+                'status' => 'Pending',
+            ]));
 
-            DB::table('payment_logs')->insert([
-                'order_id' => $order->id,
-                'payment_id' => $result['id'],
-                'status' => 'Completed',
-                'payment_source' => json_encode($result['payment_source']),
-                'purchase_units' => json_encode($result['purchase_units']),
-                'payer' => json_encode($result['payer']),
-                'links' => json_encode($result['links']),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $storedData = [
-              'order_id'=>$order->order_id,
-              'payment_id'=>$result['id'],
-              'status'=>'Completed',
-              'payment_source'=>json_encode($result['payment_source']),
-              'purchase_units'=>json_encode($result['purchase_units']),
-              'payer'=>json_encode($result['payer']),
-              'links'=>json_encode($result['links']),  
-              'created_at'=>now(),
-              'updated_at'=>now(),
-            ];
             return response()->json([
-                'message' => 'Payment Pending',
-                'order' => $order,
-                'storedData' => $storedData,
+                'message' => 'Payment pending',
+                'order'   => $order,
+                'storedData' => array_merge($paymentLog, [
+                    'order_id' => $order->order_id,
+                    'status'   => 'Pending',
+                ]),
             ]);
-
         }
 
-        foreach ($order->products as $product) {
-            $product->increment('stock', $product->pivot->amount);
-        }
+        // FAILURE: release reserved stock + restore cached product stock
+        DB::transaction(function () use ($order) {
+            $order->refresh();
 
-        $order->status = 'Cancelled';
-        $order->is_stock_restored = 1;
-        $order->save();
+            if ((int) ($order->is_stock_restored ?? 0) === 0) {
+                $this->releaseStockForOrder($order);
+                $order->is_stock_restored = 1;
+            }
 
-        return back()->with('error', 'Payment failed');
+            $order->status = 'Cancelled';
+            $order->is_paid = 0;
+            $order->save();
+        });
+
+        DB::table('payment_logs')->insert(array_merge($paymentLog, [
+            'status' => 'Failed',
+        ]));
+
+        return response()->json([
+            'error' => 'Payment failed',
+            'order' => $order->fresh(['products', 'stock']),
+            'paypal_status' => [
+                'status' => $ppTopStatus,
+                'capture_status' => $ppCaptureStatus,
+            ],
+        ], 400);
     }
 
     public function cancelOrder(Request $request)
     {
+        if (!auth()->check()) {
+            // keep existing behavior: redirect for web, json for api
+            return $this->respond($request, ['error' => 'Unauthenticated'], 401, '/login', 'error', 'Unauthenticated');
+        }
+
         $request->validate([
             'order_id' => 'required|string',
         ]);
 
-        $orderId = $request->order_id;
-
-        $order = Order::with('products')->where('order_id', $orderId)->first();
+        $order = Order::with(['products', 'stock'])
+            ->where('order_id', $request->order_id)
+            ->where('user_id', auth()->id())
+            ->first();
 
         if (!$order) {
-            return back()->with('error', 'Order not found');
+            return $this->respond($request, ['error' => 'Order not found'], 404, null, 'error', 'Order not found');
         }
 
-        if (in_array($order->status, ['Completed', 'Cancelled'])) {
-            return back()->with('error', 'Order is already ' . $order->status);
+        if (in_array($order->status, ['Completed', 'Cancelled'], true)) {
+            return $this->respond(
+                $request,
+                ['error' => 'Order is already ' . $order->status],
+                400,
+                null,
+                'error',
+                'Order is already ' . $order->status
+            );
         }
 
-        foreach ($order->products as $product) {
-            $product->increment('stock', $product->pivot->amount);
-        }
+        DB::transaction(function () use ($order) {
+            $order->refresh();
 
-        $order->status = 'Cancelled';
-        $order->is_stock_restored = 1;
-        $order->save();
+            if ((int) ($order->is_stock_restored ?? 0) === 0) {
+                $this->releaseStockForOrder($order);
+                $order->is_stock_restored = 1;
+            }
 
-        return redirect('/cart')->with('success', 'Order cancelled successfully');
+            $order->status = 'Cancelled';
+            $order->is_paid = 0;
+            $order->save();
+        });
+
+        return $this->respond(
+            $request,
+            ['message' => 'Order cancelled successfully', 'order' => $order->fresh(['products', 'stock'])],
+            200,
+            '/cart',
+            'success',
+            'Order cancelled successfully'
+        );
     }
+
+    /**
+     * Utility endpoint for restoring stock for cancelled orders that were not restored.
+     * (Useful as a cron/job backstop.)
+     */
     public function updateStock()
     {
-        $orders = Order::where('status','Cancelled')->where("is_stock_restored",0)->get();
+        $orders = Order::with(['products', 'stock'])
+            ->where('status', 'Cancelled')
+            ->where('is_stock_restored', 0)
+            ->get();
+
+        $count = 0;
+
         foreach ($orders as $order) {
-            foreach ($order->products as $product) {
-                $product->increment('stock', $product->pivot->amount);
+            DB::transaction(function () use ($order, &$count) {
+                $order->refresh();
+
+                if ((int) ($order->is_stock_restored ?? 0) === 1) {
+                    return;
+                }
+
+                $this->releaseStockForOrder($order);
+                $order->is_stock_restored = 1;
+                $order->save();
+
+                $count++;
+            });
+        }
+
+        return response()->json([
+            'message' => 'Stock restoration complete',
+            'restored_orders' => $count,
+        ]);
+    }
+
+    /**
+     * Releases digital stock rows and restores Product.stock cached counter.
+     */
+    private function releaseStockForOrder(Order $order): void
+    {
+        // Release digital stock rows
+        Stock::where('order_id', $order->id)->update([
+            'is_taken'   => 0,
+            'order_id'   => null,
+            'user_id'    => null,
+            'updated_at' => now(),
+        ]);
+
+        // Restore cached product stock counters (if you maintain Product.stock)
+        $order->loadMissing('products');
+
+        foreach ($order->products as $product) {
+            $qty = (int) ($product->pivot->amount ?? 0);
+            if ($qty > 0) {
+                $product->increment('stock', $qty);
             }
-            $order->update(['is_stock_restored' => 1]);
         }
     }
 
+    /**
+     * Returns JSON if request expects JSON, otherwise redirects/back with flash message.
+     */
+    private function respond(Request $request, array $payload, int $status = 200, ?string $redirectTo = null, string $flashKey = 'success', ?string $flashMessage = null)
+    {
+        if ($request->expectsJson()) {
+            return response()->json($payload, $status);
+        }
+
+        $flashMessage = $flashMessage ?? ($payload['message'] ?? $payload['error'] ?? '');
+
+        if ($redirectTo) {
+            return redirect($redirectTo)->with($flashKey, $flashMessage);
+        }
+
+        return back()->with($flashKey, $flashMessage);
+    }
 }

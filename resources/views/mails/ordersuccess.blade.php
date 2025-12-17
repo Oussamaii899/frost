@@ -25,6 +25,8 @@
         ];
     });
 
+    // Digital stock items (generic payload)
+    $digitalItems = $order->stock->groupBy('product_id');
     $formattedDate = $order->created_at->format("F d, Y • h:i A");
     $totalFormatted = "$" . number_format($order->total, 2);
 @endphp
@@ -90,7 +92,40 @@
                 <p style="font-size:16px; font-weight:600; color:#00d4ff; margin:0;">{{ $totalFormatted }}</p>
             </div>
         </div>
-
+        @foreach($digitalItems as $productId => $stocks)
+            @php
+                $product = $order->products->firstWhere('id', $productId);
+            @endphp
+        
+            <div style="margin-bottom:20px;">
+                <p style="font-size:14px; font-weight:600; color:#333; margin-bottom:8px;">
+                    {{ $product->name ?? 'Product' }}
+                </p>
+        
+                @foreach($stocks as $index => $stock)
+                    <div style="background:#ffffff; border:1px dashed #ffcc00; border-radius:6px; padding:12px; margin-bottom:10px;">
+                        <p style="font-size:12px; font-weight:600; color:#ff9800; margin-bottom:6px;">
+                            Item #{{ $loop->iteration }}
+                        </p>
+        
+                        @if(is_array($stock->data))
+                            @foreach($stock->data as $key => $value)
+                                <p style="font-size:13px; color:#444; margin:2px 0;">
+                                    <strong>{{ ucfirst($key) }}:</strong>
+                                    <span style="font-family:monospace;">{{ $value }}</span>
+                                </p>
+                            @endforeach
+                        @elseif(!is_null($stock->data))
+                            <p style="font-size:13px; color:#444;">
+                                {{ $stock->data }}
+                            </p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endforeach
+        
+        
         {{-- PAYMENT DETAILS --}}
         <div style="background:#f0f8ff; padding:20px; border-radius:6px; border:1px solid #00d4ff; margin:25px 0;">
             <h3 style="color:#0084ff; font-size:14px; text-transform:uppercase; margin-bottom:10px;">

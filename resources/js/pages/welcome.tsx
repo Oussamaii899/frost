@@ -1337,7 +1337,6 @@ export default function FrostMarket({Categories, Products, Settings, user}: {Cat
                 onClick={() => {
                   // In a real app, this would open Discord invite
                   addToCart(selectedProductslug); 
-                  window.open('/cart', "_blank");
                 }}
                 /* window.open(settings.discord_link, "_blank") */
               >

@@ -193,19 +193,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="stock" className="text-white">
-                  Stock Quantity *
-                </Label>
-                <Input
-                  id="stock"
-                  type="number"
-                  required
-                  value={formData.stock}
-                  onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                  className="bg-slate-900/50 border-slate-600 text-white"
-                />
-              </div>
+
               <div className="space-y-2">
               <Label htmlFor="badge" className="text-white">
                 Badge Status

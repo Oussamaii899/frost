@@ -43,6 +43,8 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => Setting::where('key', 'site_name')->first()?->value, //config('app.name'),
+            'color' => Setting::where('key', 'color')->first()?->value ?? '#06b6d4',
+            'background_color' => Setting::where('key', 'background_color')->first()?->value ?? '#0f172a',
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),

@@ -28,7 +28,7 @@ export function StockDisplayItem({ data }: StockDisplayItemProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-xs text-gray-500 mb-1">{firstEntry[0]}</p>
-            <p className="text-sm text-cyan-400 font-medium truncate">{String(firstEntry[1])}</p>
+            <p className="text-sm text-primary font-medium truncate">{String(firstEntry[1])}</p>
           </div>
           {restEntries.length > 0 && (
             <Button
@@ -36,7 +36,7 @@ export function StockDisplayItem({ data }: StockDisplayItemProps) {
               onClick={() => setIsExpanded(!isExpanded)}
               size="sm"
               variant="ghost"
-              className="text-gray-400 hover:text-cyan-400 h-8 w-8 p-0 flex-shrink-0"
+              className="text-gray-400 hover:text-primary h-8 w-8 p-0 flex-shrink-0"
             >
               <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
             </Button>

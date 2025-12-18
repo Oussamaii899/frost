@@ -4,18 +4,25 @@ import { MessageCircle } from "lucide-react"
 
 export default function MaintenancePage({ discordUrl, sitename }: { discordUrl?: string, sitename?: string }) {
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-950 flex flex-col relative">
+    <div className="min-h-screen w-full overflow-hidden bg-background flex flex-col relative transition-colors duration-300">
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        {/* Deep mesh gradient base */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(var(--primary),0.15),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(30,41,59,1),transparent_40%)]"></div>
+
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
         <div
-          className="absolute top-3/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"
+          className="absolute top-3/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "1s" }}
         ></div>
         <div
-          className="absolute top-1/2 left-3/4 w-80 h-80 bg-blue-400/5 rounded-full blur-3xl animate-pulse"
+          className="absolute top-1/2 left-3/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "2s" }}
         ></div>
+
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]"></div>
       </div>
 
       {/* Content wrapper */}
@@ -24,8 +31,8 @@ export default function MaintenancePage({ discordUrl, sitename }: { discordUrl?:
         <div className="text-center space-y-4 mb-4">
           <div className="flex justify-center mb-6">
             <div className="relative">
-              <img src="frost.png" className="w-20 h-20 text-cyan-400 " style={{ animationDuration: "3s" }} />
-              <div className="absolute inset-0 bg-cyan-400/20 rounded-full blur-2xl"></div>
+              <img src="frost.png" className="w-20 h-20 text-primary " style={{ animationDuration: "3s" }} />
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl"></div>
             </div>
           </div>
 
@@ -39,9 +46,9 @@ export default function MaintenancePage({ discordUrl, sitename }: { discordUrl?:
         <div className="w-full backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 md:p-12 shadow-2xl space-y-6">
           <div className="flex items-center justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full blur-lg opacity-75"></div>
-              <div className="relative bg-gradient-to-br from-slate-900 to-blue-900 rounded-2xl p-4">
-                <img src="frost-logo.png" className=" text-cyan-400" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/50 rounded-full blur-lg opacity-75"></div>
+              <div className="relative bg-background/50 backdrop-blur-3xl rounded-2xl p-4 border border-white/10">
+                <img src="frost-logo.png" className=" text-primary" />
               </div>
             </div>
           </div>
@@ -52,15 +59,15 @@ export default function MaintenancePage({ discordUrl, sitename }: { discordUrl?:
               We're working hard behind the scenes to bring you enhanced features and improved performance.
             </p>
             <div className="inline-block">
-              <p className="text-cyan-400 font-semibold text-xl">Expected back online soon</p>
+              <p className="text-primary font-semibold text-xl">Expected back online soon</p>
             </div>
           </div>
 
           {/* Loading animation */}
           <div className="flex justify-center gap-2 pt-4">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce"></div>
-            <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+            <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
+            <div className="w-2 h-2 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0.4s" }}></div>
           </div>
         </div>
 
@@ -69,7 +76,7 @@ export default function MaintenancePage({ discordUrl, sitename }: { discordUrl?:
           href={discordUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-900 font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] group"
+          className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-slate-900 font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(var(--primary),0.5)] group"
         >
           <MessageCircle className="w-6 h-6 group-hover:rotate-12 transition-transform" />
           Join our Discord for updates
@@ -77,16 +84,16 @@ export default function MaintenancePage({ discordUrl, sitename }: { discordUrl?:
       </div>
 
       {/* Footer */}
-      <footer className="w-screen -ml-[calc(100vw-100%)] bg-gradient-to-r from-slate-900/80 to-blue-900/80 backdrop-blur-sm border-t border-white/10 mt-auto">
+      <footer className="w-screen -ml-[calc(100vw-100%)] bg-background/80 backdrop-blur-sm border-t border-white/10 mt-auto">
         <div className="w-full px-4 py-8 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-blue-200 text-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-primary/80 text-sm">
             <div className="flex items-center gap-2">
-              <img src="frost.png" className="w-5 h-5 text-cyan-400" />
+              <img src="frost.png" className="w-5 h-5 text-primary" />
               <span className="font-semibold">{sitename}</span>
             </div>
             <p>© 2025 {sitename}. All rights reserved.</p>
             <div className="flex items-center gap-1">
-              <img src="frost.png" className="w-4 h-4 text-cyan-400" />
+              <img src="frost.png" className="w-4 h-4 text-primary" />
               <span>Premium Quality</span>
             </div>
           </div>

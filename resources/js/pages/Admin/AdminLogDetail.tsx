@@ -24,7 +24,7 @@ type ActivityLog = {
 export default function AdminLogDetail({ log }: { log?: ActivityLog }) {
   if (!log) {
     return (
-      <AdminLayout currentPath={`/admin/logs/${log?.id}`}>
+      <AdminLayout currentPath="/admin/logs">
         <AdminHeader />
         <div className="p-4 sm:p-6">
           <Button variant="outline" onClick={() => router.visit("/admin/logs")} className="mb-6">
@@ -48,13 +48,13 @@ export default function AdminLogDetail({ log }: { log?: ActivityLog }) {
         <div className="flex items-center gap-4 animate-slide-in-up">
           <button
             onClick={() => router.visit("/admin/logs")}
-            className="text-gray-400 hover:text-cyan-400 transition-colors"
+            className="text-gray-400 hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-              <Activity className="w-6 sm:w-8 h-6 sm:h-8 text-cyan-400" />
+              <Activity className="w-6 sm:w-8 h-6 sm:h-8 text-primary" />
               Log Details
             </h1>
             <p className="text-sm text-gray-400 mt-1">Activity log #{log.id} information</p>
@@ -185,7 +185,7 @@ export default function AdminLogDetail({ log }: { log?: ActivityLog }) {
                     </div>
                   )}
 
-                  <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-lg p-4 border border-cyan-500/30">
+                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4 border border-primary/30">
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Event</p>
                     <p className="text-white font-semibold">{log.event || "N/A"}</p>
                   </div>

@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 
 import AppearanceTabs from '@/components/appearance-tabs';
+import ThemeColorPicker from '@/components/theme-color-picker';
 import HeadingSmall from '@/components/heading-small';
 import { type BreadcrumbItem } from '@/types';
 
@@ -23,6 +24,8 @@ export default function Appearance() {
                 <div className="space-y-6">
                     <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
                     <AppearanceTabs />
+                    <div className="border-t border-border pt-6"></div>
+                    <ThemeColorPicker />
                 </div>
             </SettingsLayout>
         </AppLayout>

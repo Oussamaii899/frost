@@ -28,64 +28,64 @@ export default function CustomerOrderDetail({ order, paypalClientId }: { order?:
     if (!paypalLoaded || !showPaymentView || !isPaymentReady) return
 
     if (!(window as any).paypal) return
-    ;(window as any).paypal
-      .Buttons({
-        createOrder: () => {
-          return fetch("/paypal/create", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
-            },
-            body: JSON.stringify({ order_id: order.order_id }),
-          })
-            .then(async (res) => {
-              const data = await res.json().catch(() => ({}))
-              if (!res.ok || !data.id) {
-                const msg = data.error || "Unable to create PayPal order"
-                throw new Error(msg)
-              }
-              return data.id
+      ; (window as any).paypal
+        .Buttons({
+          createOrder: () => {
+            return fetch("/paypal/create", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
+              },
+              body: JSON.stringify({ order_id: order.order_id }),
             })
-        },
+              .then(async (res) => {
+                const data = await res.json().catch(() => ({}))
+                if (!res.ok || !data.id) {
+                  const msg = data.error || "Unable to create PayPal order"
+                  throw new Error(msg)
+                }
+                return data.id
+              })
+          },
 
-        onApprove: (data: any) => {
-          return fetch("/paypal/capture", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
-            },
-            body: JSON.stringify({ paypal_order_id: data.orderID }),
-          })
-            .then(async (res) => {
-              const data = await res.json().catch(() => ({}))
-              if (!res.ok) {
-                const msg = (data && data.error) || "Unable to capture PayPal order"
-                throw new Error(msg)
-              }
-              return data
+          onApprove: (data: any) => {
+            return fetch("/paypal/capture", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
+              },
+              body: JSON.stringify({ paypal_order_id: data.orderID }),
             })
-            .then(() => {
-              toast.success("Payment successful!")
-              setShowPaymentView(false)
-              window.location.reload()
-            })
-        },
+              .then(async (res) => {
+                const data = await res.json().catch(() => ({}))
+                if (!res.ok) {
+                  const msg = (data && data.error) || "Unable to capture PayPal order"
+                  throw new Error(msg)
+                }
+                return data
+              })
+              .then(() => {
+                toast.success("Payment successful!")
+                setShowPaymentView(false)
+                window.location.reload()
+              })
+          },
 
-        onCancel: () => {
-          toast.error("Payment cancelled")
-          fetch("/order/cancel", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
-            },
-            body: JSON.stringify({ order_id: order.order_id }),
-          })
-        },
-      })
-      .render("#paypal-button-container")
+          onCancel: () => {
+            toast.error("Payment cancelled")
+            fetch("/order/cancel", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
+              },
+              body: JSON.stringify({ order_id: order.order_id }),
+            })
+          },
+        })
+        .render("#paypal-button-container")
   }, [paypalLoaded, showPaymentView, isPaymentReady, order.order_id])
 
   const handleContinuePayment = () => {
@@ -145,12 +145,12 @@ export default function CustomerOrderDetail({ order, paypalClientId }: { order?:
   const capture = purchaseUnits.payments?.captures?.[0] || {}
 
 
-  console.log("paymentDetails"+paymentDetails)
-  console.log("paymentSource"+ paymentSource)
-  console.log("purchaseUnits"+purchaseUnits)
-  console.log("payer"+payer)
-  console.log("shipping"+shipping)
-  console.log("capture"+capture)
+  console.log("paymentDetails" + paymentDetails)
+  console.log("paymentSource" + paymentSource)
+  console.log("purchaseUnits" + purchaseUnits)
+  console.log("payer" + payer)
+  console.log("shipping" + shipping)
+  console.log("capture" + capture)
 
   return (
     <CustomerLayout>
@@ -169,12 +169,12 @@ export default function CustomerOrderDetail({ order, paypalClientId }: { order?:
           </div>
           {
             order.status === "Completed" && (
-            <a href={route('customer.order.invoice',order.order_id)}>
-            <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2">
-              <Download className="w-4 h-4" />
-              Invoice
-            </Button>
-            </a>
+              <a href={route('customer.order.invoice', order.order_id)}>
+                <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2">
+                  <Download className="w-4 h-4" />
+                  Invoice
+                </Button>
+              </a>
             )
           }
         </div>
@@ -203,7 +203,7 @@ export default function CustomerOrderDetail({ order, paypalClientId }: { order?:
                   {hasMoreItems && (
                     <Button
                       variant="ghost"
-                      className="w-full mt-4 text-cyan-400 hover:text-cyan-300 hover:bg-slate-700/50 gap-2"
+                      className="w-full mt-4 text-primary hover:text-primary hover:bg-slate-700/50 gap-2"
                       onClick={() => setShowAllItems(!showAllItems)}
                     >
                       {showAllItems ? (
@@ -246,12 +246,12 @@ export default function CustomerOrderDetail({ order, paypalClientId }: { order?:
                       </p>
                       <Button
                         onClick={handleContinuePayment}
-                        className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold"
+                        className="w-full mt-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold"
                       >
                         Continue Payment
                       </Button>
                     </div>
-                  ):(
+                  ) : (
                     <div>
                       <p className="text-red-400 font-medium mb-2">✗ Order Cancelled</p>
                       <p className="text-sm">Your payment has been cancelled.</p>
@@ -260,6 +260,73 @@ export default function CustomerOrderDetail({ order, paypalClientId }: { order?:
                 </div>
               </CardContent>
             </Card>
+
+            {order.status === "Completed" && order.stock && order.stock.length > 0 && (
+              <Card className="bg-slate-800/50 border-slate-700 animate-slide-in-left" style={{ animationDelay: "0.15s" }}>
+                <CardHeader>
+                  <CardTitle className="text-white">Delivered Items</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {Object.entries(
+                      order.stock.reduce((acc: any, stock: any) => {
+                        const productId = stock.product_id;
+                        if (!acc[productId]) acc[productId] = [];
+                        acc[productId].push(stock);
+                        return acc;
+                      }, {})
+                    ).map(([productId, stocks]: [string, any]) => {
+                      const product = order.products.find((p: any) => p.id === parseInt(productId));
+                      return (
+                        <div key={productId} className="space-y-3">
+                          <h4 className="text-sm font-semibold text-primary uppercase tracking-wider">
+                            {product?.name || "Product"}
+                          </h4>
+                          <div className="grid gap-3">
+                            {stocks.map((stock: any, index: number) => {
+                              let stockData = stock.data;
+                              if (typeof stockData === "string") {
+                                try {
+                                  stockData = JSON.parse(stockData);
+                                } catch (e) {
+                                  // Keep as string if not JSON
+                                }
+                              }
+
+                              return (
+                                <div
+                                  key={stock.id || index}
+                                  className="p-4 bg-slate-900/50 border border-slate-700 rounded-lg space-y-2"
+                                >
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs font-medium text-gray-500">Item #{index + 1}</span>
+                                  </div>
+                                  {typeof stockData === "object" && stockData !== null ? (
+                                    Object.entries(stockData).map(([key, value]) => (
+                                      <div key={key} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                                        <span className="text-sm text-gray-400">
+                                          {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ")}:
+                                        </span>
+                                        <span className="text-sm text-white font-mono bg-slate-800 px-2 py-0.5 rounded break-all">
+                                          {String(value)}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-sm text-white font-mono break-all">{stockData}</p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
 
             {order.status === "Completed" && (
               <Card
@@ -362,9 +429,9 @@ export default function CustomerOrderDetail({ order, paypalClientId }: { order?:
                       order.status === "Completed"
                         ? "mt-1 bg-green-500/20 text-green-500 border-green-500/30 capitalize"
                         : order.status === "Processing"
-                          ? "mt-1 bg-cyan-500/20 text-cyan-500 border-cyan-500/30 capitalize"
-                          :order.status === "Pending" ?"mt-1 bg-orange-500/20 text-orange-500 border-orange-500/30 capitalize":
-                          "mt-1 bg-red-500/20 text-red-500 border-red-500/30 capitalize"
+                          ? "mt-1 bg-primary/20 text-primary border-primary/30 capitalize"
+                          : order.status === "Pending" ? "mt-1 bg-orange-500/20 text-orange-500 border-orange-500/30 capitalize" :
+                            "mt-1 bg-red-500/20 text-red-500 border-red-500/30 capitalize"
                     }
                   >
                     {order.status}

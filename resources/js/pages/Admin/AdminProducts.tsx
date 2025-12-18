@@ -70,7 +70,7 @@ export default function AdminProducts({ products }: { products?: any }) {
               <p className="text-sm text-gray-400 mt-1">Manage your product catalog</p>
             </div>
             <a href="/admin/products/create">
-              <Button className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25">
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25">
                 <Plus className="w-4 h-4" />
                 Add Product
               </Button>
@@ -84,7 +84,7 @@ export default function AdminProducts({ products }: { products?: any }) {
               placeholder="Search by product name or category..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-cyan-500"
+              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-primary"
             />
           </div>
 

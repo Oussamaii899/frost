@@ -47,7 +47,7 @@ export default function AdminProductView({ product }: { product: any }) {
   }
 
   const handleDeleteStock = (stockId: number) => {
-    router.delete(route('stock.remove', {product: product.id, stock: stockId}), {
+    router.delete(route('stock.remove', { product: product.id, stock: stockId }), {
       onSuccess: () => {
         toast.success("Stock deleted successfully!")
         setDeleteStockId(null)
@@ -67,12 +67,12 @@ export default function AdminProductView({ product }: { product: any }) {
       <AdminHeader />
       <div className="p-6 space-y-6 max-w-4xl">
         <div className="flex items-center gap-4 animate-slide-in-up">
-          <a href="/admin/products" className="text-gray-400 hover:text-cyan-400 transition-colors">
+          <a href="/admin/products" className="text-gray-400 hover:text-primary transition-colors">
             <ArrowLeft className="w-6 h-6" />
           </a>
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Package className="w-8 h-8 text-cyan-400" />
+              <Package className="w-8 h-8 text-primary" />
               Product Details
             </h1>
             <p className="text-gray-400 mt-1">View product information</p>
@@ -87,7 +87,7 @@ export default function AdminProductView({ product }: { product: any }) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-400 mb-1">Category</p>
-                <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">{product.category.name}</Badge>
+                <Badge className="bg-primary/20 text-primary border-primary/30">{product.category.name}</Badge>
               </div>
               <div>
                 <p className="text-sm text-gray-400 mb-1">Stock Status</p>
@@ -105,7 +105,7 @@ export default function AdminProductView({ product }: { product: any }) {
 
             <div>
               <p className="text-sm text-gray-400 mb-2">Price</p>
-              <p className="text-2xl font-bold text-cyan-400">{product.price}</p>
+              <p className="text-2xl font-bold text-primary">{product.price}</p>
             </div>
 
             <div>
@@ -115,7 +115,7 @@ export default function AdminProductView({ product }: { product: any }) {
 
             <div className="flex gap-3 pt-4">
               <a href={`/admin/products/${product.slug}/edit`} className="flex-1">
-                <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white">
+                <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white">
                   Edit Product
                 </Button>
               </a>
@@ -131,7 +131,7 @@ export default function AdminProductView({ product }: { product: any }) {
             <CardTitle className="text-white">Stocks</CardTitle>
             <Dialog open={isAddStockOpen} onOpenChange={setIsAddStockOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 h-9 px-3">
+                <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 h-9 px-3">
                   <Plus className="w-4 h-4" />
                   Add Stock
                 </Button>
@@ -206,7 +206,7 @@ export default function AdminProductView({ product }: { product: any }) {
             <div className="flex items-center justify-center p-4 sm:p-6 border-t border-slate-700">
               <Button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white"
               >
                 {isExpanded ? "Show Less" : `Show More (${stocks.length - INITIAL_DISPLAY} more)`}
               </Button>

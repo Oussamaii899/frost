@@ -103,7 +103,7 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
         type="button"
         onClick={handleAddStock}
         variant="outline"
-        className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 bg-transparent gap-2"
+        className="w-full border-primary/30 text-primary hover:bg-primary/10 bg-transparent gap-2"
       >
         <Plus className="w-4 h-4" />
         Add to List
@@ -147,7 +147,7 @@ export function StockForm({ onSubmit, isLoading = false }: StockFormProps) {
         <Button
           type="submit"
           disabled={stocks.length === 0 || isLoading}
-          className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white disabled:opacity-50 text-sm"
+          className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white disabled:opacity-50 text-sm"
         >
           {isLoading ? "Adding..." : `Add ${stocks.length} Stock${stocks.length !== 1 ? "s" : ""}`}
         </Button>

@@ -41,7 +41,7 @@ export default function AdminCategoryView({ category, totalProducts, totalRevenu
             </div>
           </div>
           <a href={`/admin/categories/${category.slug}/edit`}>
-            <Button className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25">
+            <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25">
               <Edit2 className="w-4 h-4" />
               Edit Category
             </Button>
@@ -125,7 +125,7 @@ export default function AdminCategoryView({ category, totalProducts, totalRevenu
                             className="border-slate-700 hover:bg-slate-800/50 transition-colors"
                           >
                             <TableCell className="text-white font-medium text-sm">{product.name}</TableCell>
-            
+
                             <TableCell className="text-gray-300 text-sm">${product.price || "0.00"}</TableCell>
                             <TableCell className="text-primary font-semibold text-sm">
                               ${product.total_revenue || "0.00"}
@@ -146,7 +146,7 @@ export default function AdminCategoryView({ category, totalProducts, totalRevenu
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-gray-400 hover:text-cyan-400 hover:bg-slate-700/50"
+                                    className="text-gray-400 hover:text-primary hover:bg-slate-700/50"
                                     title="Edit Product"
                                   >
                                     <Edit2 className="w-4 h-4" />

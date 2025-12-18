@@ -58,7 +58,7 @@ export default function AdminOrders({ orders }: { orders?: any[] }) {
               placeholder="Search by order ID or customer name..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-cyan-500"
+              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-primary"
             />
           </div>
 

@@ -12,7 +12,7 @@ import { router } from "@inertiajs/react"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default function AdminProductCreate({categories}: {categories?: any}) {
+export default function AdminProductCreate({ categories }: { categories?: any }) {
   const [formData, setFormData] = useState({
     name: "",
     category_id: "",
@@ -20,7 +20,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
     originalPrice: "",
     stock: "",
     description: "",
-    badge:"",
+    badge: "",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,7 +33,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
       stock: formData.stock,
       description: formData.description,
     })
-    setFormData({ name: "", category_id: "", price: "", originalPrice: "", stock: "", description: "", badge:"" })
+    setFormData({ name: "", category_id: "", price: "", originalPrice: "", stock: "", description: "", badge: "" })
   }
 
   return (
@@ -42,7 +42,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
       <div className="p-6 space-y-6 ">
         <div className="animate-slide-in-up">
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Package className="w-8 h-8 text-cyan-400" />
+            <Package className="w-8 h-8 text-primary" />
             Create Product
           </h1>
           <p className="text-gray-400 mt-1">Add a new product to your catalog</p>
@@ -60,7 +60,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary"
                   placeholder="e.g., Nitro Boost"
                   required
                 />
@@ -71,7 +71,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
                   <select
                     value={formData.category_id}
                     onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
                     required
                   >
                     <option value="-1" selected>Select a category</option>
@@ -86,7 +86,7 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary"
                     placeholder="$0.00"
                     required
                   />
@@ -94,20 +94,20 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                      <Label htmlFor="badge" className="text-white">
-                          Badge Status
-                        </Label>
-                        <Select value={formData.badge} onValueChange={(value) => setFormData({ ...formData, badge: value })}>
-                          <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-slate-700">
-                            <SelectItem value="not_recommended">Not Recommended</SelectItem>
-                            <SelectItem value="recommended">Recommended</SelectItem>
-                            <SelectItem value="popular">Popular</SelectItem>
-                            <SelectItem value="new">New</SelectItem>
-                          </SelectContent>
-                        </Select>
+                  <Label htmlFor="badge" className="text-white">
+                    Badge Status
+                  </Label>
+                  <Select value={formData.badge} onValueChange={(value) => setFormData({ ...formData, badge: value })}>
+                    <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="not_recommended">Not Recommended</SelectItem>
+                      <SelectItem value="recommended">Recommended</SelectItem>
+                      <SelectItem value="popular">Popular</SelectItem>
+                      <SelectItem value="new">New</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Original Price</label>
@@ -115,28 +115,28 @@ export default function AdminProductCreate({categories}: {categories?: any}) {
                     type="number"
                     value={formData.originalPrice}
                     onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary"
                     placeholder="$0.00"
                     required
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 min-h-24 resize-none"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary min-h-24 resize-none"
                   placeholder="Product description..."
                 />
               </div>
               <div className="flex gap-3">
-                <Button className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white">
+                <Button className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white">
                   Create Product
                 </Button>
                 <Button onClick={() => router.visit(route('admin.products.index'))} className="flex-1 w-full bg-slate-700 text-white hover:bg-slate-600">
-                    Cancel
+                  Cancel
                 </Button>
               </div>
             </form>

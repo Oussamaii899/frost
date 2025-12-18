@@ -108,10 +108,20 @@
                             Item #{{ $loop->iteration }}
                         </p>
         
-                        @if(is_array($stock->data))
-                            @foreach($stock->data as $key => $value)
+                        @php
+                            $stockData = $stock->data;
+                            if (is_string($stockData)) {
+                                $decoded = json_decode($stockData, true);
+                                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                    $stockData = $decoded;
+                                }
+                            }
+                        @endphp
+
+                        @if(is_array($stockData))
+                            @foreach($stockData as $key => $value)
                                 <p style="font-size:13px; color:#444; margin:2px 0;">
-                                    <strong>{{ ucfirst($key) }}:</strong>
+                                    <strong>{{ ucfirst(str_replace('_', ' ', $key)) }}:</strong>
                                     <span style="font-family:monospace;">{{ $value }}</span>
                                 </p>
                             @endforeach

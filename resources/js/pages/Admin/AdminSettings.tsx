@@ -12,7 +12,7 @@ import { toast, Toaster } from "sonner"
 import { useState } from "react"
 import { router } from "@inertiajs/react"
 
-export default function AdminSettings({settings}: {settings: any}) {
+export default function AdminSettings({ settings }: { settings: any }) {
   const [formData, setFormData] = useState(
     settings.reduce((acc: any, setting: any) => {
       acc[setting.key] = setting.value
@@ -34,7 +34,7 @@ export default function AdminSettings({settings}: {settings: any}) {
         toast.error("Failed to update settings.")
       },
     })
-  } 
+  }
 
   return (
     <AdminLayout currentPath="/admin/settings">
@@ -64,7 +64,7 @@ export default function AdminSettings({settings}: {settings: any}) {
                   <Input
                     id="siteName"
                     value={formData.site_name ?? ''}
-                    onChange={(e)=>{setFormData({...formData, site_name: e.target.value})}}
+                    onChange={(e) => { setFormData({ ...formData, site_name: e.target.value }) }}
                     className="bg-slate-900/50 border-slate-600 text-white text-sm"
                   />
                 </div>
@@ -75,7 +75,7 @@ export default function AdminSettings({settings}: {settings: any}) {
                   <Input
                     id="siteDescription"
                     value={formData.site_description ?? ''}
-                    onChange={(e)=>{setFormData({...formData, site_description: e.target.value})}}
+                    onChange={(e) => { setFormData({ ...formData, site_description: e.target.value }) }}
                     className="bg-slate-900/50 border-slate-600 text-white text-sm"
                   />
                 </div>
@@ -86,7 +86,7 @@ export default function AdminSettings({settings}: {settings: any}) {
                   <Input
                     id="discordLink"
                     value={formData.discord_link ?? ''}
-                    onChange={(e)=>{setFormData({...formData, discord_link: e.target.value})}}
+                    onChange={(e) => { setFormData({ ...formData, discord_link: e.target.value }) }}
                     className="bg-slate-900/50 border-slate-600 text-white text-sm"
                   />
                 </div>
@@ -107,21 +107,21 @@ export default function AdminSettings({settings}: {settings: any}) {
                     <p className="font-medium text-white text-sm">Developer Badge</p>
                     <p className="text-xs text-gray-400">Show developer credit in footer</p>
                   </div>
-                  <Switch checked={formData.developer_badge === '1'} onCheckedChange={(checked) => setFormData({...formData, developer_badge: checked ? '1' : '0'})} />
+                  <Switch checked={formData.developer_badge === '1'} onCheckedChange={(checked) => setFormData({ ...formData, developer_badge: checked ? '1' : '0' })} />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-white text-sm">Maintenance Mode</p>
                     <p className="text-xs text-gray-400">Temporarily disable the site</p>
                   </div>
-                  <Switch checked={formData.maintenance_mode === '1'} onCheckedChange={(checked) => setFormData({...formData, maintenance_mode: checked ? '1' : '0'})} />
+                  <Switch checked={formData.maintenance_mode === '1'} onCheckedChange={(checked) => setFormData({ ...formData, maintenance_mode: checked ? '1' : '0' })} />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-white text-sm">Email Notifications</p>
                     <p className="text-xs text-gray-400">Send order confirmation emails</p>
                   </div>
-                  <Switch checked={formData.email_notifications === '1'} onCheckedChange={(checked) => setFormData({...formData, email_notifications: checked ? '1' : '0'})} />
+                  <Switch checked={formData.email_notifications === '1'} onCheckedChange={(checked) => setFormData({ ...formData, email_notifications: checked ? '1' : '0' })} />
                 </div>
               </CardContent>
             </Card>
@@ -139,7 +139,7 @@ export default function AdminSettings({settings}: {settings: any}) {
                   <Input
                     id="currency"
                     value={formData.default_currency ?? ''}
-                    onChange={(e)=>{setFormData({...formData, default_currency: e.target.value})}}
+                    onChange={(e) => { setFormData({ ...formData, default_currency: e.target.value }) }}
                     className="bg-slate-900/50 border-slate-600 text-white text-sm"
                   />
                 </div>
@@ -151,7 +151,7 @@ export default function AdminSettings({settings}: {settings: any}) {
                     id="taxRate"
                     type="number"
                     value={formData.tax_rate ?? ''}
-                    onChange={(e)=>{setFormData({...formData, tax_rate: e.target.value})}}
+                    onChange={(e) => { setFormData({ ...formData, tax_rate: e.target.value }) }}
                     className="bg-slate-900/50 border-slate-600 text-white text-sm"
                   />
                 </div>
@@ -174,7 +174,7 @@ export default function AdminSettings({settings}: {settings: any}) {
                   <Input
                     id="metaTitle"
                     value={formData.Meta_title ?? ''}
-                    onChange={(e)=>{setFormData({...formData, Meta_title: e.target.value})}}
+                    onChange={(e) => { setFormData({ ...formData, Meta_title: e.target.value }) }}
                     className="bg-slate-900/50 border-slate-600 text-white text-sm"
                   />
                 </div>
@@ -185,10 +185,56 @@ export default function AdminSettings({settings}: {settings: any}) {
                   <Input
                     id="metaDescription"
                     value={formData.Meta_description ?? ''}
-                    onChange={(e)=>{setFormData({...formData, Meta_description: e.target.value})}}
+                    onChange={(e) => { setFormData({ ...formData, Meta_description: e.target.value }) }}
                     className="bg-slate-900/50 border-slate-600 text-white text-sm"
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+
+            <Card className="bg-slate-800/50 border-slate-700 animate-slide-in-right" style={{ animationDelay: "0.25s" }}>
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Theme Settings</CardTitle>
+                <CardDescription className="text-gray-400 text-sm">Customize the website's appearance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="themeColor" className="text-white text-sm">
+                    Primary Color
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex items-center justify-center p-1 border border-slate-600 rounded-lg h-10 w-20 overflow-hidden bg-slate-900/50">
+                      <Input
+                        id="themeColor"
+                        type="color"
+                        value={formData.color ?? '#06b6d4'}
+                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                        className="absolute inset-0 w-[150%] h-[150%] -top-[25%] -left-[25%] p-0 border-0 cursor-pointer"
+                      />
+                    </div>
+                    <span className="text-sm text-gray-400 font-mono">{(formData.color ?? '#06b6d4').toUpperCase()}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mt-4">
+                  <Label htmlFor="backgroundColor" className="text-white text-sm">
+                    Background Color
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex items-center justify-center p-1 border border-slate-600 rounded-lg h-10 w-20 overflow-hidden bg-slate-900/50">
+                      <Input
+                        id="backgroundColor"
+                        type="color"
+                        value={formData.background_color ?? '#0f172a'}
+                        onChange={(e) => setFormData({ ...formData, background_color: e.target.value })}
+                        className="absolute inset-0 w-[150%] h-[150%] -top-[25%] -left-[25%] p-0 border-0 cursor-pointer"
+                      />
+                    </div>
+                    <span className="text-sm text-gray-400 font-mono">{(formData.background_color ?? '#0f172a').toUpperCase()}</span>
+                  </div>
+                </div>
+
               </CardContent>
             </Card>
           </div>
@@ -196,7 +242,7 @@ export default function AdminSettings({settings}: {settings: any}) {
           <div className="flex justify-end animate-slide-in-up" style={{ animationDelay: "0.3s" }}>
             <Button
               onClick={handleSubmit}
-              className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
+              className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25"
             >
               <Save className="w-4 h-4" />
               Save Settings
@@ -204,6 +250,6 @@ export default function AdminSettings({settings}: {settings: any}) {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </AdminLayout >
   )
 }

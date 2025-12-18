@@ -83,17 +83,17 @@ export function CustomerSidebar({
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 group text-sm font-medium",
                   isActive
-                    ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-500/10"
+                    ? "bg-gradient-to-r from-primary/20 to-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/10"
                     : "text-gray-400 hover:text-white hover:bg-slate-700/50",
                 )}
               >
                 <item.icon className={cn("w-5 h-5 flex-shrink-0")} />
                 <span className="flex-1">{item.label}</span>
                 {item.notificationCount && item.notificationCount > 0 ? (
-                  <span className="bg-cyan-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">
+                  <span className="bg-primary text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">
                     {item.notificationCount > 99 ? "99+" : item.notificationCount}
                   </span>
-                ): (null)}
+                ) : (null)}
               </a>
             )
           })}

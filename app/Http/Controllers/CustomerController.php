@@ -69,9 +69,9 @@ class CustomerController extends Controller
 
     public function orderDetail($orderId)
     {
-        $order = Order::with('products', 'user', 'paymentLogs')->where('order_id', $orderId)->firstOrFail();
+        $order = Order::with('products', 'user', 'paymentLogs', 'stock')->where('order_id', $orderId)->firstOrFail();
         return Inertia::render('Customer/CustomerOrderDetail', [
-            'order' => $order->load('products', 'user', 'paymentLogs'),
+            'order' => $order->load('products', 'user', 'paymentLogs', 'stock'),
             'paypalClientId' => config('services.paypal.client_id'),
         ]);
     }
@@ -84,8 +84,8 @@ class CustomerController extends Controller
     }
         public function orderInvoice($orderId)
     {   
-        $order = Order::with('user', 'products', 'paymentLogs')->where('order_id', $orderId)->where('user_id', Auth::user()->id)->firstOrFail();
-        $order->load(['user', 'products', 'paymentLogs']);
+        $order = Order::with('user', 'products', 'paymentLogs', 'stock')->where('order_id', $orderId)->where('user_id', Auth::user()->id)->firstOrFail();
+        $order->load(['user', 'products', 'paymentLogs', 'stock']);
 
         $pdf = Pdf::loadView('invoices.order', [
             'order' => $order,

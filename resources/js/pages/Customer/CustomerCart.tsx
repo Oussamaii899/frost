@@ -53,7 +53,7 @@ export default function CartPage({ products, paypalClientId }: { products?: any;
 
   const subtotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.amount, 0), [cartItems])
   const tax = useMemo(() => subtotal * 0.1, [subtotal])
-  const total = useMemo(() => subtotal , [subtotal])
+  const total = useMemo(() => subtotal, [subtotal])
 
   const totalPages = Math.ceil(cartItems.length / itemsPerPage)
   const startIdx = (currentPage - 1) * itemsPerPage
@@ -82,62 +82,62 @@ export default function CartPage({ products, paypalClientId }: { products?: any;
     if (!orderId || !paypalLoaded || !isPaymentReady) return
 
     if (!(window as any).paypal) return
-    ;(window as any).paypal
-      .Buttons({
-        createOrder: () => {
-          return fetch("/paypal/create", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
-            },
-            body: JSON.stringify({ order_id: orderId }),
-          })
-            .then(async (res) => {
-              const data = await res.json().catch(() => ({}))
-              if (!res.ok || !data.id) {
-                const msg = data.error || "Unable to create PayPal order"
-                throw new Error(msg)
-              }
-              return data.id
+      ; (window as any).paypal
+        .Buttons({
+          createOrder: () => {
+            return fetch("/paypal/create", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
+              },
+              body: JSON.stringify({ order_id: orderId }),
             })
-        },
+              .then(async (res) => {
+                const data = await res.json().catch(() => ({}))
+                if (!res.ok || !data.id) {
+                  const msg = data.error || "Unable to create PayPal order"
+                  throw new Error(msg)
+                }
+                return data.id
+              })
+          },
 
-        onApprove: (data: any) => {
-          return fetch("/paypal/capture", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
-            },
-            body: JSON.stringify({ paypal_order_id: data.orderID }),
-          })
-            .then(async (res) => {
-              const data = await res.json().catch(() => ({}))
-              if (!res.ok) {
-                const msg = (data && data.error) || "Unable to capture PayPal order"
-                throw new Error(msg)
-              }
-              return data
+          onApprove: (data: any) => {
+            return fetch("/paypal/capture", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
+              },
+              body: JSON.stringify({ paypal_order_id: data.orderID }),
             })
-            .then((res) => {
-              localStorage.removeItem("cart")
-              router.get(route("order.success", res.storedData))
-            })
-        },
+              .then(async (res) => {
+                const data = await res.json().catch(() => ({}))
+                if (!res.ok) {
+                  const msg = (data && data.error) || "Unable to capture PayPal order"
+                  throw new Error(msg)
+                }
+                return data
+              })
+              .then((res) => {
+                localStorage.removeItem("cart")
+                router.get(route("order.success", res.storedData))
+              })
+          },
 
-        onCancel: () => {
-          fetch("/order/cancel", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
-            },
-            body: JSON.stringify({ order_id: orderId }),
-          })
-        },
-      })
-      .render("#paypal-button-container")
+          onCancel: () => {
+            fetch("/order/cancel", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
+              },
+              body: JSON.stringify({ order_id: orderId }),
+            })
+          },
+        })
+        .render("#paypal-button-container")
   }, [orderId, paypalLoaded, isPaymentReady])
 
   async function proceedToCheckout() {
@@ -194,13 +194,20 @@ export default function CartPage({ products, paypalClientId }: { products?: any;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden transition-colors duration-300">
       <Toaster position="top-right" />
       {/* Background blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Deep mesh gradient base */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(var(--primary),0.15),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(30,41,59,1),transparent_40%)]"></div>
+
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float-slow"></div>
         <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float-delayed"></div>
-        <div className="absolute top-1/2 left-3/4 w-48 h-48 bg-blue-400/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-1/2 left-3/4 w-48 h-48 bg-primary/5 rounded-full blur-3xl animate-float"></div>
+
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]"></div>
       </div>
 
       <main className="relative z-10 min-h-screen">
@@ -231,7 +238,7 @@ export default function CartPage({ products, paypalClientId }: { products?: any;
                 <p className="text-gray-400 mb-6">Start shopping to add items to your cart</p>
                 <a
                   href="/"
-                  className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-500 hover:bg-cyan-500/90 text-white rounded-lg font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded-lg font-medium transition-all duration-300 hover:scale-105"
                 >
                   Continue Shopping
                 </a>
@@ -253,7 +260,7 @@ export default function CartPage({ products, paypalClientId }: { products?: any;
                       <CardContent className="p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                           <div className="w-full sm:w-24 h-24 bg-slate-700/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-blue-400/20 rounded-lg flex items-center justify-center">
+                            <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center">
                               {Icon ? (
                                 <Icon className="w-12 h-12 text-primary" />
                               ) : (
@@ -355,7 +362,7 @@ export default function CartPage({ products, paypalClientId }: { products?: any;
                     {/* Checkout Button */}
                     <button
                       onClick={proceedToCheckout}
-                      className="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-500/90 hover:to-blue-500/90 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
+                      className="w-full mt-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
                     >
                       Proceed to Checkout
                     </button>
@@ -397,7 +404,7 @@ export default function CartPage({ products, paypalClientId }: { products?: any;
 
               {/* PayPal Button Container */}
               <div id="paypal-button-container" className="mt-6"></div>
-              
+
             </CardContent>
           </Card>
         </div>

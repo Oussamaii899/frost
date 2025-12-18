@@ -16,14 +16,14 @@ interface AdminSidebarProps {
 export function AdminSidebar({ currentPath, isMobile = false, onClose, nOrders = 0, nProducts = 0 }: AdminSidebarProps) {
 
   const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
-  { icon: Package, label: "Products", href: "/admin/products", notificationCount: nProducts ?? 0 },
-  { icon: FolderTree, label: "Categories", href: "/admin/categories" },
-  { icon: ShoppingCart, label: "Orders", href: "/admin/orders", notificationCount: nOrders ?? 0 },
-  { icon: Users, label: "Customers", href: "/admin/customers" },
-  { icon: Logs, label: "Logs", href: "/admin/logs" },
-  { icon: Settings, label: "Settings", href: "/admin/settings"},
-]
+    { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
+    { icon: Package, label: "Products", href: "/admin/products", notificationCount: nProducts ?? 0 },
+    { icon: FolderTree, label: "Categories", href: "/admin/categories" },
+    { icon: ShoppingCart, label: "Orders", href: "/admin/orders", notificationCount: nOrders ?? 0 },
+    { icon: Users, label: "Customers", href: "/admin/customers" },
+    { icon: Logs, label: "Logs", href: "/admin/logs" },
+    { icon: Settings, label: "Settings", href: "/admin/settings" },
+  ]
 
   return (
     <aside
@@ -60,17 +60,17 @@ export function AdminSidebar({ currentPath, isMobile = false, onClose, nOrders =
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 group",
                 isActive
-                  ? "bg-gradient-to-r from-cyan-400/20 to-accent/20 text-cyan-400 border border-cyan-400/30"
+                  ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30"
                   : "text-gray-400 hover:text-white hover:bg-slate-700/50",
               )}
             >
               <item.icon className={cn("w-5 h-5", isActive && "animate-pulse-slow")} />
               <span className="font-medium flex-1">{item.label}</span>
               {item.notificationCount && item.notificationCount > 0 ? (
-                <span className="bg-cyan-500 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">
+                <span className="bg-primary text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">
                   {item.notificationCount > 99 ? "99+" : item.notificationCount}
                 </span>
-              ): (null)}
+              ) : (null)}
             </a>
           )
         })}

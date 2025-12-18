@@ -60,11 +60,11 @@ export default function AdminCategoryEdit({ category }: { category: any }) {
       onStart: () => setIsLoading(true),
       onFinish: () => setIsLoading(false),
       onSuccess: () => {
-        toast.success("Category updated successfully!")   
-        },
-        onError: () => {
-            toast.error("Failed to update category.")
-        },
+        toast.success("Category updated successfully!")
+      },
+      onError: () => {
+        toast.error("Failed to update category.")
+      },
     })
   }
 
@@ -83,7 +83,7 @@ export default function AdminCategoryEdit({ category }: { category: any }) {
   return (
     <AdminLayout>
       <AdminHeader />
-        <Toaster position="top-right" richColors /> 
+      <Toaster position="top-right" richColors />
       <div className="p-6 space-y-6">
         <div className="flex items-center gap-4 animate-slide-in-up">
           <a href={`/admin/categories/${category.slug}`} className="text-gray-400 hover:text-white transition-colors">
@@ -178,7 +178,7 @@ export default function AdminCategoryEdit({ category }: { category: any }) {
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
+                      className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25"
                     >
                       <Save className="w-4 h-4" />
                       {isLoading ? "Saving..." : "Save Changes"}

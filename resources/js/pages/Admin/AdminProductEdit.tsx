@@ -30,25 +30,25 @@ import {
 
 const ArrowLeft = () => (
   <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-       strokeLinejoin="round" viewBox="0 0 24 24">
+    strokeLinejoin="round" viewBox="0 0 24 24">
     <path d="M19 12H5" />
     <path d="M12 19l-7-7 7-7" />
   </svg>
 )
 
-export default function AdminProductEdit({categories, product}: {categories?: any, product?: any}) {
+export default function AdminProductEdit({ categories, product }: { categories?: any, product?: any }) {
   const [formData, setFormData] = useState({
-      name: product.name,
-      category_id: product.category_id ? String(product.category_id) : "",
-      price: product.price,
-      originalPrice: product.originalPrice,
-      stock: product.stock,
-      description: product.description,
-      badge: product.badge
-    })  
+    name: product.name,
+    category_id: product.category_id ? String(product.category_id) : "",
+    price: product.price,
+    originalPrice: product.originalPrice,
+    stock: product.stock,
+    description: product.description,
+    badge: product.badge
+  })
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Product updated:", formData);    
+    console.log("Product updated:", formData);
     toast.success("Product updated successfully!")
     router.put(route('admin.products.update', product.id), {
       name: formData.name,
@@ -59,12 +59,12 @@ export default function AdminProductEdit({categories, product}: {categories?: an
       description: formData.description,
       badge: formData.badge
     })
-    
+
   }
 
   const handleDelete = () => {
-      toast.success("Product deleted successfully!")
-      router.delete(`/admin/products/${product.id}`)
+    toast.success("Product deleted successfully!")
+    router.delete(`/admin/products/${product.id}`)
   }
 
   return (
@@ -74,14 +74,14 @@ export default function AdminProductEdit({categories, product}: {categories?: an
         <div className="flex items-center justify-between animate-slide-in-up">
           <div className="flex items-center gap-4">
             <a href="/admin/products" className="text-gray-400 hover:text-white transition-colors">
-               <ArrowLeft />
+              <ArrowLeft />
             </a>
             <div>
               <h1 className="text-3xl font-bold text-white">Edit Product</h1>
               <p className="text-gray-400 mt-1">Update product information</p>
             </div>
           </div>
-{/*           <Button
+          {/*           <Button
             onClick={handleDelete}
             variant="outline"
             className="border-destructive text-destructive hover:bg-destructive/10 gap-2 bg-transparent"
@@ -96,8 +96,8 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                 variant="outline"
                 className="border-destructive text-destructive hover:bg-destructive/10 gap-2 bg-transparent"
               >
-                 <Trash2 className="w-4 h-4" />
-                 Delete Product
+                <Trash2 className="w-4 h-4" />
+                Delete Product
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-slate-800/50 border-slate-700">
@@ -143,7 +143,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                     id="name"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="bg-slate-900/50 border-slate-600 text-white"
                   />
                 </div>
@@ -152,7 +152,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                   <Label htmlFor="category" className="text-white">
                     Category *
                   </Label>
-                  <Select required value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
+                  <Select required value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
                     <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
                       <SelectValue placeholder={categories && categories.find((category: any) => String(category.id) === formData.category_id)?.name} />
                     </SelectTrigger>
@@ -174,42 +174,42 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                     step="0.01"
                     required
                     value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     className="bg-slate-900/50 border-slate-600 text-white"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="originalPrice" className="text-white">
-                    Original Price *  
+                    Original Price *
                   </Label>
                   <Input
                     id="originalPrice"
                     type="number"
                     required
                     value={formData.originalPrice}
-                    onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
                     className="bg-slate-900/50 border-slate-600 text-white"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-              <Label htmlFor="badge" className="text-white">
-                Badge Status
-              </Label>
-              <Select value={formData.badge} onValueChange={(value) => setFormData({ ...formData, badge: value })}>
-                <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="not_recommended">Not Recommended</SelectItem>
-                  <SelectItem value="recommended">Recommended</SelectItem>
-                  <SelectItem value="popular">Popular</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <Label htmlFor="badge" className="text-white">
+                  Badge Status
+                </Label>
+                <Select value={formData.badge} onValueChange={(value) => setFormData({ ...formData, badge: value })}>
+                  <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="not_recommended">Not Recommended</SelectItem>
+                    <SelectItem value="recommended">Recommended</SelectItem>
+                    <SelectItem value="popular">Popular</SelectItem>
+                    <SelectItem value="new">New</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-white">
@@ -219,7 +219,7 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                   id="description"
                   rows={4}
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="bg-slate-900/50 border-slate-600 text-white"
                 />
               </div>
@@ -236,10 +236,10 @@ export default function AdminProductEdit({categories, product}: {categories?: an
                 </a>
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 px-6 py-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25"
                 >
                   <Save className="w-4 h-4" />
-                 Save Changes
+                  Save Changes
                 </Button>
               </div>
             </CardContent>

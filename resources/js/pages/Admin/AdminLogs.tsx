@@ -82,7 +82,7 @@ export default function AdminLogs({ logs, users }: { logs?: ActivityLog[], users
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-slide-in-up">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-                <Activity className="w-6 sm:w-8 h-6 sm:h-8 text-cyan-400" />
+                <Activity className="w-6 sm:w-8 h-6 sm:h-8 text-primary" />
                 Activity Logs
               </h1>
               <p className="text-sm text-gray-400 mt-1">View system and user activity logs</p>
@@ -96,7 +96,7 @@ export default function AdminLogs({ logs, users }: { logs?: ActivityLog[], users
               placeholder="Search by action, user, or description..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-cyan-500"
+              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-primary"
             />
           </div>
 
@@ -126,7 +126,7 @@ export default function AdminLogs({ logs, users }: { logs?: ActivityLog[], users
                             className={`text-xs text-white border ${log.event === "created" ? "bg-green-500/20" : log.event === "updated" ? "bg-blue-500/20" : log.event === "deleted" ? "bg-red-500/20" : "bg-gray-500/20"}`}
                           >
                             {
-                                log.event === "created" ? "Creat" : log.event === "updated" ? "Update" : log.event === "deleted" ? "Delete" : log.event === 'mail_sent' ? 'Mail' : log.event
+                              log.event === "created" ? "Creat" : log.event === "updated" ? "Update" : log.event === "deleted" ? "Delete" : log.event === 'mail_sent' ? 'Mail' : log.event
                             }
                           </Badge>
                         </TableCell>
@@ -140,7 +140,7 @@ export default function AdminLogs({ logs, users }: { logs?: ActivityLog[], users
                             variant="ghost"
                             size="sm"
                             onClick={() => router.visit(`/admin/logs/${log.id}`)}
-                            className="text-gray-400 hover:text-cyan-400 hover:bg-slate-700/50 text-sm"
+                            className="text-gray-400 hover:text-primary hover:bg-slate-700/50 text-sm"
                           >
                             <Eye className="w-4 h-4 mr-2" />
                             View

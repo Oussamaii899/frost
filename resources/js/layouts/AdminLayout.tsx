@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Menu } from "lucide-react"
 import { AdminSidebar } from "@/pages/Admin/AdminSidebar"
+import { usePage } from "@inertiajs/react"
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -14,6 +15,25 @@ export function AdminLayout({ children, currentPath }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [nOrders, setNOrders] = useState(0)
   const [nProducts, setNProducts] = useState(0)
+  const { props } = usePage()
+  const themeColor = props.color as string
+
+  useEffect(() => {
+    if (themeColor) {
+      document.documentElement.style.setProperty('--primary', themeColor)
+      document.documentElement.style.setProperty('--ring', themeColor)
+      document.documentElement.style.setProperty('--sidebar-primary', themeColor)
+      document.documentElement.style.setProperty('--sidebar-ring', themeColor)
+    }
+
+    const backgroundColor = props.background_color as string
+    if (backgroundColor) {
+      document.documentElement.style.setProperty('--background', backgroundColor);
+      // Also update other related vars if we want a full theme switch, but --background is key.
+      // We might want to update --sidebar to match or contrast.
+      // For now, let's strictly set --background and relying on the Layout to use it.
+    }
+  }, [themeColor, props.background_color])
 
   useEffect(() => {
     // Fetch sidebar data dynamically
@@ -35,7 +55,7 @@ export function AdminLayout({ children, currentPath }: AdminLayoutProps) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden" style={{ transition: 'background-color 0.3s ease' }}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float-slow"></div>
         <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float-delayed"></div>

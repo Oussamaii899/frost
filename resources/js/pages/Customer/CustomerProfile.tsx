@@ -81,12 +81,12 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
 
   const handleFieldChange =
     (field: Exclude<keyof ProfileFormState, "avatar" | "banner">) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setData((prev) => ({
-        ...prev,
-        [field]: e.target.value,
-      }))
-    }
+      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setData((prev) => ({
+          ...prev,
+          [field]: e.target.value,
+        }))
+      }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: "avatar" | "banner") => {
     const file = e.target.files?.[0]
@@ -160,11 +160,12 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
 
   const bannerStyle = bannerPreview
     ? {
-        backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.65) 0%, rgba(15,23,42,0.92) 100%), url(${bannerPreview})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : { backgroundImage: "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(59,130,246,0.25))" }
+      backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.65) 0%, rgba(15,23,42,0.92) 100%), url(${bannerPreview})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }
+
+    : { backgroundImage: "linear-gradient(135deg, rgba(var(--primary), 0.2), rgba(var(--primary), 0.25))" }
 
   return (
     <CustomerLayout currentPage="/profile">
@@ -187,21 +188,21 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
 
               <CardContent className="relative px-4 md:px-8 pb-8 -mt-12 md:-mt-17">
                 <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
-                  <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-slate-800 shadow-2xl ring-2 ring-cyan-500/30 flex-shrink-0">
+                  <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-slate-800 shadow-2xl ring-2 ring-primary/30 flex-shrink-0">
                     <AvatarImage src={avatarPreview || undefined} alt={data.name || "User"} />
-                    <AvatarFallback className="bg-gradient-to-br from-cyan-600 to-blue-600 text-white text-2xl md:text-3xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white text-2xl md:text-3xl font-bold">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="flex-1 w-full">
                     <h2 className="text-2xl md:text-3xl font-bold text-white">{data.name}</h2>
-                    <p className="text-cyan-400 text-sm md:text-base mb-3">
+                    <p className="text-primary text-sm md:text-base mb-3">
                       @{data.name?.toLowerCase().replace(/\s+/g, "_") || "user"}
                     </p>
                     <div className="flex flex-col gap-2 text-xs md:text-sm text-gray-400">
                       <span className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                        <Mail className="w-4 h-4 text-primary flex-shrink-0" />
                         {data.email}
                       </span>
                       {user?.createdAt && (
@@ -216,7 +217,7 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
             <Card className="bg-slate-800/30 backdrop-blur-xl border border-white/10">
               <CardHeader>
                 <CardTitle className="text-lg md:text-xl text-white flex items-center gap-3">
-                  <div className="w-1 h-6 bg-gradient-to-b from-cyan-500 to-blue-500 rounded-full"></div>
+                  <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
                   Personal Information
                 </CardTitle>
               </CardHeader>
@@ -231,7 +232,7 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
 
                   <div>
                     <label className="text-xs md:text-sm font-semibold text-gray-400 mb-2 block flex items-center gap-2">
-                      <Phone className="w-3 h-3 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
+                      <Phone className="w-3 h-3 md:w-4 md:h-4 text-primary flex-shrink-0" />
                       Phone Number
                     </label>
                     <div className="bg-slate-900/40 border border-slate-700/50 rounded px-3 py-2 text-sm md:text-base text-white">
@@ -241,7 +242,7 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
 
                   <div>
                     <label className="text-xs md:text-sm font-semibold text-gray-400 mb-2 block flex items-center gap-2">
-                      <Mail className="w-3 h-3 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
+                      <Mail className="w-3 h-3 md:w-4 md:h-4 text-primary flex-shrink-0" />
                       Email Address
                     </label>
                     <div className="bg-slate-900/40 border border-slate-700/50 rounded px-3 py-2 text-sm md:text-base text-white">
@@ -251,7 +252,7 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
 
                   <div>
                     <label className="text-xs md:text-sm font-semibold text-gray-400 mb-2 block flex items-center gap-2">
-                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
+                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-primary flex-shrink-0" />
                       Address
                     </label>
                     <div className="bg-slate-900/40 border border-slate-700/50 rounded px-3 py-2 text-sm md:text-base text-white">
@@ -262,7 +263,7 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
 
                 <Button
                   onClick={() => setIsEditing(true)}
-                  className="w-1/4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-5 md:py-6 rounded text-sm md:text-base"
+                  className="w-1/4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold py-5 md:py-6 rounded text-sm md:text-base"
                 >
                   Edit Profile
                 </Button>
@@ -300,7 +301,7 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center">
                         {isUploadingBanner ? (
                           <div className="text-white flex flex-col items-center gap-2">
-                            <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                             <span className="text-xs">Uploading...</span>
                           </div>
                         ) : (
@@ -317,15 +318,15 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
                     <label className="text-xs md:text-sm font-semibold text-gray-300">Avatar</label>
                     <div className="flex flex-col items-center gap-3">
                       <div className="relative cursor-pointer group" onClick={() => avatarInputRef.current?.click()}>
-                        <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-slate-800 ring-2 ring-cyan-500/30">
+                        <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-slate-800 ring-2 ring-primary/30">
                           <AvatarImage src={avatarPreview || undefined} alt={data.name || "User"} />
-                          <AvatarFallback className="bg-gradient-to-br from-cyan-600 to-blue-600 text-white text-2xl md:text-4xl font-bold">
+                          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-white text-2xl md:text-4xl font-bold">
                             {initials}
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 rounded-full transition-colors flex items-center justify-center">
                           {isUploadingAvatar ? (
-                            <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                           ) : (
                             <Upload className="w-5 h-5 md:w-6 md:h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                           )}
@@ -409,7 +410,7 @@ export default function CustomerProfile({ user: providedUser }: CustomerProfileP
                   <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/10">
                     <Button
                       type="submit"
-                      className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-sm md:text-base font-semibold py-5 md:py-6"
+                      className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white text-sm md:text-base font-semibold py-5 md:py-6"
                     >
                       <Save className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                       Save Changes

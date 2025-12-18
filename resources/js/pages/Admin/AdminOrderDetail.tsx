@@ -34,16 +34,16 @@ export default function AdminOrderDetail({ order }: { order: any }) {
   const aggregatedItems = (() => {
     if (!Array.isArray(order.products) || order.products.length === 0) return []
     const map: Record<string, any> = {}
-    ;(order.products as any[]).forEach((item: any) => {
-      const id = String(item.id)
-      const amount = Number(item.pivot?.amount ?? item.amount ?? 1)
-      const price = item.pivot?.price ?? item.price ?? 0
-      if (!map[id]) {
-        map[id] = { ...item, amount, price }
-      } else {
-        map[id].amount = Number(map[id].amount) + amount
-      }
-    })
+      ; (order.products as any[]).forEach((item: any) => {
+        const id = String(item.id)
+        const amount = Number(item.pivot?.amount ?? item.amount ?? 1)
+        const price = item.pivot?.price ?? item.price ?? 0
+        if (!map[id]) {
+          map[id] = { ...item, amount, price }
+        } else {
+          map[id].amount = Number(map[id].amount) + amount
+        }
+      })
     return Object.values(map)
   })()
 
@@ -76,19 +76,19 @@ export default function AdminOrderDetail({ order }: { order: any }) {
       <div className="p-4 sm:p-6 space-y-6">
         <div className="flex max-sm:flex-col items-center justify-between gap-4 animate-slide-in-up">
           <div className="flex items-center gap-4">
-            <a href="/admin/orders" className="text-gray-400 hover:text-cyan-400 transition-colors">
+            <a href="/admin/orders" className="text-gray-400 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </a>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-                <ShoppingCart className="w-6 sm:w-8 h-6 sm:h-8 text-cyan-400" />
+                <ShoppingCart className="w-6 sm:w-8 h-6 sm:h-8 text-primary" />
                 Order #{order.order_id}
               </h1>
               <p className="text-sm text-gray-400 mt-1">View and manage order details</p>
             </div>
           </div>
           <a href={route("admin.orders.invoice", order.order_id)} target="_blank" rel="noreferrer">
-            <Button className="gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white ">
+            <Button className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white ">
               <Download className="w-4 h-4" />
               <span>Invoice</span>
             </Button>
@@ -115,14 +115,14 @@ export default function AdminOrderDetail({ order }: { order: any }) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-400 mb-1">Total Amount</p>
-                    <p className="text-xl font-bold text-cyan-400">${order.total}</p>
+                    <p className="text-xl font-bold text-primary">${order.total}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-400 mb-1">Status</p>
                     <select
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary"
                     >
                       <option value={order.status} className="bg-slate-900 text-white">
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -140,7 +140,7 @@ export default function AdminOrderDetail({ order }: { order: any }) {
 
                 <Button
                   onClick={handleSubmit}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 py-2 font-semibold"
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 py-2 font-semibold"
                 >
                   <Edit className="w-4 h-4" />
                   Save Changes
@@ -168,7 +168,7 @@ export default function AdminOrderDetail({ order }: { order: any }) {
                               <span>amount: {item.amount}</span>
                             </div>
                           </div>
-                          <p className="text-cyan-400 font-semibold">${Number(item.price).toFixed(2)}</p>
+                          <p className="text-primary font-semibold">${Number(item.price).toFixed(2)}</p>
                         </div>
                       ))}
 
@@ -176,7 +176,7 @@ export default function AdminOrderDetail({ order }: { order: any }) {
                         <Button
                           onClick={() => setShowMoreItems(!showMoreItems)}
                           variant="ghost"
-                          className="w-full text-cyan-400 hover:text-cyan-300 hover:bg-slate-700/50 gap-2"
+                          className="w-full text-primary hover:text-primary/90 hover:bg-slate-700/50 gap-2"
                         >
                           {showMoreItems ? (
                             <>
@@ -311,7 +311,7 @@ export default function AdminOrderDetail({ order }: { order: any }) {
                   </div>
                 </CardContent>
               </Card>
-            ):(null)}
+            ) : (null)}
           </div>
 
           {/* Right Column - Payment Information */}
@@ -322,9 +322,9 @@ export default function AdminOrderDetail({ order }: { order: any }) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-lg p-4">
+                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4">
                     <p className="text-sm text-gray-400 mb-2">Total</p>
-                    <p className="text-2xl font-bold text-cyan-400">${order.total}</p>
+                    <p className="text-2xl font-bold text-primary">${order.total}</p>
                   </div>
 
                   <div className="pt-4 space-y-3">

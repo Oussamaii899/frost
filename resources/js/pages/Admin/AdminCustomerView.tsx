@@ -8,7 +8,7 @@ import { AdminHeader } from "./AdminHeader"
 import { AdminLayout } from "@/layouts/AdminLayout"
 import { useState } from "react"
 import { router } from "@inertiajs/react"
-import {toast, Toaster} from "sonner"
+import { toast, Toaster } from "sonner"
 
 export default function AdminCustomerView({ customer }: { customer: any }) {
   const [status, setStatus] = useState(customer.status)
@@ -47,16 +47,16 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
 
   return (
     <AdminLayout currentPath={`/admin/customers/${customer.name}`}>
-      <Toaster position="top-right"/>
+      <Toaster position="top-right" />
       <AdminHeader />
       <div className="p-4 md:p-6 space-y-6 max-w-7xl ">
         <div className="flex items-center gap-4 animate-slide-in-up">
-          <a href="/admin/customers" className="text-gray-400 hover:text-cyan-400 transition-colors">
+          <a href="/admin/customers" className="text-gray-400 hover:text-primary transition-colors">
             <ArrowLeft className="w-6 h-6" />
           </a>
           <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-              <Users className="w-7 h-7 md:w-8 h-8 text-cyan-400" />
+              <Users className="w-7 h-7 md:w-8 h-8 text-primary" />
               Customer Details
             </h1>
             <p className="text-sm md:text-base text-gray-400 mt-1">View customer information</p>
@@ -81,7 +81,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
                     <select
                       value={status}
                       onChange={(e) => handleStatusChange(e.target.value)}
-                      className="w-full px-2 md:px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm hover:border-cyan-400 transition-colors focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 z-10"
+                      className="w-full px-2 md:px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm hover:border-primary transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary z-10"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
@@ -105,7 +105,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
 
                 <div>
                   <p className="text-xs md:text-sm text-gray-400 mb-2">Total Spent</p>
-                  <p className="text-xl md:text-2xl font-bold text-cyan-400">${customer.orders_sum_total ?? 0}</p>
+                  <p className="text-xl md:text-2xl font-bold text-primary">${customer.orders_sum_total ?? 0}</p>
                 </div>
 
                 <div>
@@ -133,7 +133,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
             <Card className="bg-slate-800/50 border-slate-700 animate-slide-in-up">
               <CardHeader>
                 <CardTitle className="text-base md:text-lg text-white flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-cyan-400" />
+                  <ShoppingBag className="w-5 h-5 text-primary" />
                   Recent Orders
                 </CardTitle>
               </CardHeader>
@@ -168,7 +168,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
                             <div className="text-xs md:text-sm text-gray-400">
                               <p>{order.items_count || 1} item(s)</p>
                             </div>
-                            <p className="text-base md:text-lg font-bold text-cyan-400">${order.total}</p>
+                            <p className="text-base md:text-lg font-bold text-primary">${order.total}</p>
                           </div>
                         </div>
                       ))}
@@ -215,7 +215,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
         <Card className="bg-slate-800/50 border-slate-700 animate-slide-in-up">
           <CardHeader>
             <CardTitle className="text-base md:text-lg text-white flex items-center gap-2">
-              <Mail className="w-5 h-5 text-cyan-400" />
+              <Mail className="w-5 h-5 text-primary" />
               Send Email to Customer
             </CardTitle>
           </CardHeader>
@@ -228,7 +228,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Customer email"
                 disabled
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm placeholder-gray-500 hover:border-cyan-400 transition-colors focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm placeholder-gray-500 hover:border-primary transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
 
@@ -239,7 +239,7 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Email subject"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm placeholder-gray-500 hover:border-cyan-400 transition-colors focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm placeholder-gray-500 hover:border-primary transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
 
@@ -250,13 +250,13 @@ export default function AdminCustomerView({ customer }: { customer: any }) {
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Write your message here..."
                 rows={5}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm placeholder-gray-500 hover:border-cyan-400 transition-colors focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 resize-none"
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded text-xs md:text-sm placeholder-gray-500 hover:border-primary transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
               />
             </div>
 
             <Button
               onClick={handleSendEmail}
-              className="w-full bg-cyan-500 text-white hover:bg-cyan-600 transition-colors"
+              className="w-full bg-primary text-white hover:bg-primary/90 transition-colors"
             >
               Send Email
             </Button>

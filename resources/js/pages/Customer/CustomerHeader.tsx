@@ -25,11 +25,11 @@ export function CustomerHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-gray-400 hover:text-cyan-400 hover:bg-slate-700/50 relative"
+            className="text-gray-400 hover:text-primary hover:bg-slate-700/50 relative"
             onClick={() => setShowNotifications(!showNotifications)}
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></span>
+            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse"></span>
           </Button>
 
           {showNotifications && (

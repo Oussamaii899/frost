@@ -30,8 +30,8 @@ export default function CustomerSupport() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="bg-slate-800/50 border-slate-700 animate-slide-in-up">
             <CardContent className="p-6 space-y-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
-                <Mail className="w-6 h-6 text-cyan-400" />
+              <div className="w-12 h-12 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg flex items-center justify-center">
+                <Mail className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <h3 className="text-white font-semibold">Email Support</h3>
@@ -42,8 +42,8 @@ export default function CustomerSupport() {
 
           <Card className="bg-slate-800/50 border-slate-700 animate-slide-in-up">
             <CardContent className="p-6 space-y-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-blue-400" />
+              <div className="w-12 h-12 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg flex items-center justify-center">
+                <MessageSquare className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <h3 className="text-white font-semibold">Live Chat</h3>
@@ -56,7 +56,7 @@ export default function CustomerSupport() {
         <Card className="bg-slate-800/50 border-slate-700 animate-slide-in-up">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-cyan-400" />
+              <HelpCircle className="w-5 h-5 text-primary" />
               Submit a Ticket
             </CardTitle>
           </CardHeader>
@@ -68,7 +68,7 @@ export default function CustomerSupport() {
                   type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary"
                   placeholder="What can we help with?"
                   required
                 />
@@ -78,12 +78,12 @@ export default function CustomerSupport() {
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 min-h-32 resize-none"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary min-h-32 resize-none"
                   placeholder="Tell us more about your issue..."
                   required
                 />
               </div>
-              <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white">
+              <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white">
                 Submit Ticket
               </Button>
             </form>

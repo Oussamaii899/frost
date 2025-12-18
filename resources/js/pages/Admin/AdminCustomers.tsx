@@ -57,7 +57,7 @@ export default function AdminCustomers({ customers }: { customers: any[] }) {
               placeholder="Search by customer name or email..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-cyan-500"
+              className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-500 focus:border-primary"
             />
           </div>
 

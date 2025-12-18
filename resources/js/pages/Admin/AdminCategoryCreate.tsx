@@ -58,7 +58,7 @@ export default function AdminCategoryCreate() {
   return (
     <AdminLayout>
       <AdminHeader />
-        <Toaster position="top-right" richColors />
+      <Toaster position="top-right" richColors />
       <div className="p-6 space-y-6">
         <div className="flex items-center gap-4 animate-slide-in-up">
           <a href="/admin/categories" className="text-gray-400 hover:text-white transition-colors">
@@ -153,7 +153,7 @@ export default function AdminCategoryCreate() {
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white gap-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/25"
+                      className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white gap-2 font-semibold group hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25"
                     >
                       <Plus className="w-4 h-4" />
                       {isLoading ? "Creating..." : "Create Category"}

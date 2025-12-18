@@ -714,6 +714,8 @@ public function settingsUpdate()
         'tax_rate' => 'required|numeric',
         'developer_badge' => 'required',
         'email_notifications' => 'required',
+        'color' => 'nullable|string',
+        'background_color' => 'nullable|string',
     ]);
 
     // Convert boolean-like values to '1' or '0'

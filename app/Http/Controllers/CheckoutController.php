@@ -15,17 +15,6 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    /**
-     * IMPORTANT ASSUMPTION:
-     * - stock.order_id stores orders.id (INT primary key), NOT orders.order_id (the "FF-XXXX" string).
-     *   If your stock.order_id is actually meant to store the string order number, change:
-     *      Stock::where('order_id', $order->id)
-     *   to:
-     *      Stock::where('order_id', $order->order_id)
-     *
-     * ALSO:
-     * - Make sure your Stock model uses: protected $table = 'stock';
-     */
 
     public function createOrder(Request $request)
     {
@@ -45,12 +34,11 @@ class CheckoutController extends Controller
         try {
             $order = DB::transaction(function () use ($cart, $userId) {
 
-                // Sorting reduces deadlock chance when multiple products are locked
                 $cart = collect($cart)->sortBy('slug')->values()->all();
 
                 $total = 0;
                 $items = [];
-                $reservedStockIdsByProduct = []; // [product_id => [stock_id, ...]]
+                $reservedStockIdsByProduct = []; 
 
                 foreach ($cart as $cartItem) {
                     $slug = (string) $cartItem['slug'];
@@ -64,10 +52,9 @@ class CheckoutController extends Controller
                         throw new \InvalidArgumentException("Product not found: {$slug}");
                     }
 
-                    // Reserve REAL stock rows (digital inventory units)
                     $stocks = Stock::where('product_id', $product->id)
                         ->where('is_taken', 0)
-                        ->whereNull('order_id') // optional safety so "taken" stock always has order_id
+                        ->whereNull('order_id') 
                         ->orderBy('id')
                         ->limit($amount)
                         ->lockForUpdate()
@@ -79,9 +66,7 @@ class CheckoutController extends Controller
 
                     $reservedStockIdsByProduct[$product->id] = $stocks->pluck('id')->all();
 
-                    // Optional: keep Product.stock as cached available count
                     if ((int) $product->stock < $amount) {
-                        // This prevents cached stock from going negative if it ever becomes inconsistent
                         throw new \InvalidArgumentException($product->name . " is out of stock");
                     }
                     $product->decrement('stock', $amount);
@@ -276,7 +261,6 @@ class CheckoutController extends Controller
         // PENDING: PayPal order completed but capture pending (don’t deliver yet)
         if ($ppTopStatus === 'COMPLETED' && $ppCaptureStatus === 'PENDING') {
             $order->status = 'Processing';
-            // IMPORTANT: treat as NOT fully paid until completed
             $order->is_paid = 0;
             $order->save();
 
